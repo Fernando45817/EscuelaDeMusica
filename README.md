@@ -17,3 +17,7 @@
 5. capo
 6. estuche
 
+## Objetivo del proyecto
+
+* Promocionar los instrumentos musicales
+* Dar a conocer el servicio de la tienda
