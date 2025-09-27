@@ -1,5 +1,5 @@
 # Escuela De Música
- ## Descripción.
+ ## Descripción
 ### clases
 **clases de los distintos instrumentos**
 *grupales o individual*
