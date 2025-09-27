@@ -21,3 +21,6 @@
 
 * Promocionar los instrumentos musicales
 * Dar a conocer el servicio de la tienda
+* Usar imágenes para mostrar e establecimiento
+* Crear tablas para mostrar información de los productos con `<table> </table>.`
+* Usar links y referencias para repartir más información
