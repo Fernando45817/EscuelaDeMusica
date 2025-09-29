@@ -26,4 +26,9 @@
 * Usar imágenes para mostrar e establecimiento con `<img src="">.`
 * Crear tablas para mostrar información de los productos con `<table> </table>.`
 * Usar links y referencias para repartir más información
+
+  ### Ubicación
+
+  **https://maps.app.goo.gl/X38oaY52wurMH9Gr5**
+
   
