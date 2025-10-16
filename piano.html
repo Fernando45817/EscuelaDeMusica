@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Keyboard</title>
+
+    <style>
+        /* Estilos para el contenedor */
+        section {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Estilos generales para todas las teclas (base para las teclas blancas) */
+        button {
+            height: 110px;
+            width: 40px;
+            font-size: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: end; /* Alinea el texto en la parte inferior */
+            padding-bottom: 5px;
+            background: whitesmoke;
+            border-end-start-radius: 7px;
+            border-end-end-radius: 7px;
+            border: 2px solid black;
+            margin: -1px; /* Hace que las teclas se toquen */
+            z-index: 1; /* Asegura que las blancas estén debajo de las negras */
+        }
+
+        /* Estilos específicos para las teclas negras (notas con #) */
+        button:nth-child(even) {
+            background: black;
+            color: white;
+            height: 70px; /* Menor altura que las blancas */
+            width: 30px; /* Menor ancho que las blancas */
+            
+            /* PROPIEDADES CRUCIALES PARA POSICIONAMIENTO */
+            margin-left: -15px; /* Mueve la tecla negra a la izquierda sobre la tecla blanca */
+            margin-right: -15px; /* Mueve la tecla negra a la derecha sobre la tecla blanca */
+            z-index: 2; /* Asegura que la tecla negra se muestre encima de las blancas */
+        }
+
+        /* Efectos de interacción para las teclas blancas */
+        button:hover {
+            background-color: orangered;
+        }
+
+        button:active {
+            background-color: red;
+        }
+
+        /* Efectos de interacción para las teclas negras (sobrescriben a los anteriores) */
+        div button:nth-child(even):hover {
+            background-color: brown;
+        }
+
+        div button:nth-child(even):active {
+            background-color: maroon;
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <div>
+            <button>DO</button>
+            <button>DO#</button>
+            <button>RE</button>
+            <button>RE#</button>
+            <button>MI</button>
+        </div>
+        <div>
+            <button>FA</button>
+            <button>FA#</button>
+            <button>SOL</button>
+            <button>SOL#</button>
+            <button>LA</button>
+            <button>LA#</button>
+            <button>SI</button>
+        </div>
+    </section>
+</body>
+</html>
