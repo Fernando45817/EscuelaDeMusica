@@ -1,0 +1,29 @@
+function makeChannelName(str) {
+    return `${str.replace(/[^a-zA-Z0-9_.-=@,]/g, '-')}`
+}
+
+function subscribeToPusherChannel(email, pusher) {
+    if (!email) return
+
+    const channel = pusher.subscribe(makeChannelName(`user.${email}`));
+    channel.bind('App\\Events\\LogoutEvent', function() {
+        window.location.href = '/logout'
+    });
+
+    channel.bind('App\\Events\\WorkingDocumentEvent', function(response) {
+        if (checkWorkingDocument(response) && response.documentId === jPuzzleId) {
+            alert("This document has been updated in a different tab. Please refresh this page to show the current version.")
+            const alertButton = $('#alert_button')
+
+            $(window).off('beforeunload.unloadSave');
+            alertButton.attr('value', 'Refresh');
+            alertButton.on('click',function(){location.reload(true);});
+        }
+    });
+}
+
+function checkWorkingDocument(pusherResponse) {
+    if (typeof mainDocument === 'undefined' || typeof jPuzzleId === 'undefined' || pusherResponse.documentType !== 'crosswords') return false;
+
+    return  (pusherResponse.documentToken !== mainDocument)
+}

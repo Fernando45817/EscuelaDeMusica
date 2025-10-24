@@ -1,0 +1,24 @@
+function counterAppend(nodes,counter)
+{
+	var newField = nodes.childNodes;
+	for (var i=0;i<newField.length;i++)
+	{
+		var theName = newField[i].name;
+		if (theName)
+		{
+			newField[i].name = theName + counter;
+		}
+		var theId = newField[i].id;
+		if (theId)
+		{
+			newField[i].id = theId + counter;
+		}
+		
+		//recursive part
+		if(newField[i].childNodes.length>0)
+		{
+			counterAppend(newField[i],counter);
+		}
+	}
+
+}

@@ -1,0 +1,3624 @@
+var puzzleDimension = Math.sqrt(puzzleText.length);
+var puzzleArray = new Array();
+var aaListNeedsSave = 0;
+var needsSave = 0;
+var activeCell = null;
+var acrossBinary = true;
+var gridEdited = 0;
+var runningStringList = new Array();
+var undoSpot = 0;
+var needsWholesaleSave = 0;
+var tourDenominator = 0;
+var globalTourRestart = 0;
+var lastPaymentShown = 'pay';
+var isUnloading = 0;
+var newUserSimpleTipStatus = simpleTipStatus;
+var newUserSimpleTipsCompleted = simpleTipsCompleted;
+var mostRecentSignup = '';
+//used to stop the delay in auto-arranging once it gets to the ugly part
+var endDelay = 0;
+var autoArranged = false;
+var unArranged = false;
+var initialized = false;
+var mainDocument = '';
+
+document.addEventListener('DOMContentLoaded', function() {
+    if(adminViewer){
+        //if this is the admin viewer, remove the publish form
+        $('#publish_form').remove();
+    }
+    $.cookie('test_cookie', 'cookie_value');
+    if ($.cookie('test_cookie') == 'cookie_value') {
+        $.cookie('test_cookie', null); // delete the cookie
+    } else {
+        const cookieWarningElement = document.getElementById("cookie_warning");
+        if (!cookieWarningElement) {
+            return
+        }
+        cookieWarningElement.style.display = "block";
+    }
+
+    $(window).on('beforeunload.unloadSave', function () {
+        if (jUserId != 0) {
+            isUnloading = 1;
+
+            if (gridEdited == 1) {
+                //trigger saving
+                saveGrid('useSendBeacon');
+            }
+
+            const activeElement = document.activeElement;
+
+            if (activeElement && activeElement.classList.contains('clue_text')) {
+                try {
+                    saveClue(activeElement, 'useSendBeacon');
+                } catch (error) {
+                    console.error('Error in saveClue:', error);
+                }
+            }
+
+            if (aaListNeedsSave == 1) {
+                void aaListSave('useSendBeacon');
+            }
+
+        } else {
+            if (runningStringList.length > 1 || needsSave > 0 || aaListNeedsSave > 0 || gridEdited > 0) {
+                puzzleString = runningStringList[0].replace(/0/g, "");
+                return 'Your puzzle has not been saved. Are you sure you want to leave this page?';
+            }
+        }
+    });
+});
+
+// Numeric Conversion Functions
+function getRealLetter(letter) {
+    var char = null;
+    if(letter == '-') {
+        char = 0;
+    } else if(letter == '+') {
+        char = 1;
+    } else if(letter == '@') {
+        char = '‘';
+    } else {
+        char = letter;
+    }
+    return char;
+}
+function getMaskLetter(letter) {
+    var char = null;
+    if(letter == 0) {
+        char = '-';
+    } else if(letter == 1) {
+        char = '+';
+    } else if(letter == '‘') {
+        char = '@';
+    } else {
+        char = letter;
+    }
+    return char;
+}
+function getRealWord(word) {
+    return word.replace(/0/g, '-').replace(/1/g, '+').replace(/‘/g, '@');
+}
+function getMaskWord(word) {
+    return word.replace(/\-/g, 0).replace(/\+/g, 1).replace(/\@/g, '‘');
+}
+
+//needed to get size of an object since object does not have a length function
+Object.size = function (obj) {
+    var size = 0,
+        key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
+//cloning method needed to copy object, instead of reference to object
+function cloneObj(obj) {
+    var newObj = new Array();
+    for (i in obj) {
+        if (obj[i] && typeof obj[i] == "object")
+            newObj[i] = cloneObj(obj[i]);
+        else
+            newObj[i] = obj[i]
+    }
+    return newObj;
+};
+
+/*NEED TO MODIFY TO COLLECT DISPLAY PREFERENCES*/
+function publishOverlay() {
+
+    if (showOverlay == 1) {
+        if (clueValues != "[]") {
+            //displays the first screen of the overlay, to confirm clue-answer pairs
+            myConfirm({
+                leftValue: simplePuzzleTranslations.makeChanges,
+                rightValue: simplePuzzleTranslations.nextStep,
+                headerValue: "Confirm your clue-answer pairs:",
+                bodyText: "<div id=\"clue_answer_holder\"></div>"
+            });
+
+            $('#confirm_button_right').prop("onclick", null).off("click").on("click", function () {
+
+                //displays the second screen of the overlay, to set the puzzle type
+                myConfirm({
+                    leftValue: simplePuzzleTranslations.makeChanges,
+                    rightValue: simplePuzzleTranslations.publishConfirm,
+                    headerValue: "One Last Step...",
+                    bodyText: '<div id="last_step_holder"></div>'
+                });
+
+                $('#last_step_holder').prepend($('#puzzle_settings_holder'));
+                $('#puzzle_settings_holder').css({
+                    'display': 'block'
+                });
+
+                //submit logic
+                $('#confirm_button_right').off("click").on("click", async function () {
+                    //need to update all this
+
+                    var puzzleType = $('#puzzle_settings_holder input[name=puzzle_type]:checked').val();
+
+                    try {
+                        var returned = await request.form('/publish_puzzle', {
+                            puzzle_id: jPuzzleId,
+                            puzzle_type: puzzleType,
+                            quality_flg: 0,
+                            difficulty_level: 0
+                        }, {
+                            method: 'POST',
+                            responseType: 'text'
+                        });
+
+                        if (returned != "success") {
+                            alert("Error saving - you are no longer logged in");
+                            location.reload(true);
+                        } else {
+                            window.location = '/' + jPuzzleId;
+                        }
+                    } catch (error) {
+                        console.error('Error in publishOverlay:', error);
+                        if (typeof logErrors === 'function') {
+                            logErrors(createRequestError(error, 'publishOverlay - publish_puzzle'), {
+                                file: 'simple-puzzle.js',
+                                custom_function: 'publishOverlay'
+                            });
+                        }
+
+                        if (isUnloading == 0) {
+                            alert("Publish request not sent, likely due to a spotty internet connection.  Please check your connection and try again.");
+                        }
+                    }
+                });
+                $('#confirm_overlay_body').scrollTop(0);
+            });
+
+            clueSpot = document.getElementById("clue_answer_holder");
+
+            dirIndicator = document.createElement("div");
+            dirIndicator.setAttribute("class", "publish_overlay_clue_direction_indicator");
+            dirIndicator.setAttribute("id", "publish_overlay_clue_direction_across");
+            dirIndicator.setAttribute("translate", "no");
+            dirIndicator.appendChild(document.createTextNode(simplePuzzleTranslations.across));
+            clueSpot.appendChild(dirIndicator);
+
+            var shownDown = 0;
+
+            for (z in clueValues) {
+
+                x = (parseInt(clueValues[z]['puzzle_position']) % puzzleDimension) + 1;
+                y = Math.floor(parseInt(clueValues[z]['puzzle_position']) / puzzleDimension) + 1;
+
+                //verify clue is not a black square or white square
+                if (puzzleArray[x][y] != 0) {
+
+                    acrossDir = clueValues[z]['across_binary'];
+
+                    if (clueNumber = document.getElementById("cell_number" + x + "-" + y).innerHTML) {
+
+                        clueNumber = clueNumber + ". ";
+                        var confirmClueNumber = document.createElement("div");
+                        confirmClueNumber.setAttribute("class", "confirm_clue_number");
+                        confirmClueNumber.setAttribute("translate", "no");
+                        confirmClueNumber.appendChild(document.createTextNode(clueNumber));
+
+                        var clueAnswer = '';
+                        if (acrossDir == 1 && (typeof puzzleArray[x - 1] === 'undefined' || puzzleArray[x - 1][y] == 0)) {
+                            while (typeof puzzleArray[x] !== 'undefined' && puzzleArray[x][y] != 0) {
+                                clueAnswer = clueAnswer + getRealLetter(puzzleArray[x][y]);
+                                x++;
+                            }
+                        }
+
+                        if (acrossDir == 0 && (typeof puzzleArray[x][y - 1] == 'undefined' || puzzleArray[x][y - 1] == 0)) {
+                            while (typeof puzzleArray[x][y] !== 'undefined' && puzzleArray[x][y] != 0) {
+                                clueAnswer = clueAnswer + getRealLetter(puzzleArray[x][y]);
+                                y++;
+                            }
+                        }
+
+                        //gets rid of cases where it's '' (which shouldn't be there now with the clue number check first), and cases where the length is 1 (which are ignored for educational/personal puzzles)
+                        if (clueAnswer.length > 1) {
+                            if (shownDown == 0 && acrossDir == 0) {
+                                dirIndicator = document.createElement("div");
+                                dirIndicator.setAttribute("class", "publish_overlay_clue_direction_indicator");
+                                dirIndicator.setAttribute("id", "publish_overlay_clue_direction_down");
+                                dirIndicator.setAttribute("translate", "no");
+                                dirIndicator.appendChild(document.createTextNode(simplePuzzleTranslations.down));
+                                clueSpot.appendChild(dirIndicator);
+                                shownDown = 1;
+                            }
+
+                            var clueText = clueValues[z]['clue_text'];
+
+                            var confirmClueDiv = document.createElement("div");
+                            confirmClueDiv.setAttribute("class", "confirm_clue_div");
+
+                            var confirmClueText = document.createElement("div");
+                            confirmClueText.setAttribute("class", "confirm_clue_text");
+                            confirmClueText.appendChild(document.createTextNode(clueText));
+
+                            var confirmClueAnswer = document.createElement("div");
+                            confirmClueAnswer.setAttribute("class", "confirm_clue_answer");
+                            confirmClueAnswer.setAttribute("translate", "no");
+                            confirmClueAnswer.appendChild(document.createTextNode(clueAnswer));
+                            confirmClueDiv.setAttribute("translate", "no");
+                            confirmClueDiv.appendChild(confirmClueNumber);
+                            confirmClueDiv.appendChild(confirmClueText);
+                            confirmClueDiv.appendChild(confirmClueAnswer);
+                            clueSpot.appendChild(confirmClueDiv);
+                        }
+                    }
+                }
+            }
+
+            $('#confirm_overlay_body').scrollTop(0);
+        } else {
+            alert("No clues found!");
+        }
+    }
+}
+
+function recordString() {
+    setNumbers();
+
+    puzzleString = '';
+
+    for (y = 1; y <= puzzleDimension; y++) {
+        for (x = 1; x <= puzzleDimension; x++) {
+            puzzleString = puzzleString + puzzleArray[x][y];
+        }
+    }
+
+    do {
+        //removes all undo/redo spots if a new thing is done
+        if (undoSpot > 0) {
+            runningStringList.shift();
+            undoSpot--;
+        }
+
+        if (undoSpot == 0) {
+            var recordLength = runningStringList.unshift(puzzleString);
+
+            //want to make sure it's not too long
+            if (recordLength > 100) {
+                runningStringList.pop();
+            }
+        }
+    }
+    while (undoSpot > 0)
+    setChangeGridSizeDropdown();
+}
+
+function undoChange() {
+    if (typeof runningStringList[undoSpot + 1] !== 'undefined') {
+        undoSpot++;
+        theString = runningStringList[undoSpot];
+        setFromString(theString);
+        gridEdited = 1;
+        document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+    } else {
+        if(autoArranged) {
+            unArrange();
+            runningStringList.splice(undoSpot + 1, 1);
+        } else if(unArranged) {
+            autoArrange();
+        }
+    }
+}
+
+function redoChange() {
+    if(unArranged) {
+        autoArrange();
+    } else if (undoSpot > 0) {
+        undoSpot--;
+        theString = runningStringList[undoSpot];
+        setFromString(theString);
+        gridEdited = 1;
+        document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+    }
+}
+
+function setFromString(theString) {
+    var i = 0;
+    for (y = 1; y <= puzzleDimension; y++) {
+        for (x = 1; x <= puzzleDimension; x++) {
+            theChar = theString[i];
+            i++;
+            if (puzzleArray[x][y] != theChar) {
+                puzzleArray[x][y] = theChar;
+
+                if (theChar == "0") {
+                    document.getElementById('cell_char' + x + '-' + y).innerHTML = '';
+                    $('#puzzle_cell' + x + '-' + y).removeClass('black_square');
+                    $('#cell_char' + x + '-' + y).removeClass('filled_cell_char');
+                } else if (theChar == "1") {
+                    document.getElementById('cell_char' + x + '-' + y).innerHTML = '';
+                    $('#puzzle_cell' + x + '-' + y).addClass('black_square');
+                } else {
+                    document.getElementById('cell_char' + x + '-' + y).innerHTML = theChar;
+                    $('#puzzle_cell' + x + '-' + y).removeClass('black_square');
+                    $('#cell_char' + x + '-' + y).addClass('filled_cell_char');
+                }
+            }
+        }
+    }
+    setNumbers();
+}
+
+function initSaving() {
+    //MODIFY THIS FUNCTION TO PING A DIFFERENT PAGE IF USER NOT LOGGED IN, TO KEEP THE SESSION ALIVE FOR LOGGING LANDING PAGE DATA
+
+    setInterval(function () {
+        if (jUserId != 0) {
+            var verifyLogin = 1;
+            if (gridEdited == 1) {
+                saveGrid();
+                verifyLogin = 0;
+            }
+
+            if (aaListNeedsSave == 1) {
+                aaListSave();
+                verifyLogin = 0;
+            }
+
+            if (verifyLogin == 1) {
+                (async () => {
+                    try {
+                        var returned = await request.form('/verify_login', {
+                            user_id: jUserId
+                        }, {
+                            method: 'POST',
+                            responseType: 'text'
+                        });
+                        if (returned != "success") {
+                            alert("You are no longer logged in - redirecting");
+                            location.reload(true);
+                        }
+                    } catch (error) {
+                        console.error('Error in initSaving:', error);
+                        if (typeof logErrors === 'function') {
+                            logErrors(createRequestError(error, 'initSaving - verify_login'), {
+                                file: 'simple-puzzle.js',
+                                custom_function: 'initSaving - verify_login'
+                            });
+                        }
+                    }
+                })();
+            }
+        } else {
+            //keep alive so session data not lost
+            (async () => {
+                try {
+                    await request.form('/keep_alive', {}, {
+                        method: 'POST',
+                        responseType: 'text'
+                    });
+                } catch (error) {
+                    console.error('Error in initSaving:', error);
+                    if (typeof logErrors === 'function') {
+                        logErrors(createRequestError(error, 'initSaving - keep_alive'), {
+                            file: 'simple-puzzle.js',
+                            custom_function: 'initSaving - keep_alive'
+                        });
+                    }
+                }
+            })();
+        }
+    }, 60000);
+}
+
+function verifyPublish(formSpot) {
+    var cluesWritten = 1;
+    var anyWords = 0;
+
+    $('.clue_text').filter(':visible').each(function () {
+        if ($.trim($(this).val()) == '') {
+            cluesWritten = 0;
+        } else {
+            anyWords = 1;
+        }
+    });
+
+
+    if (anyWords == 0 && cluesWritten == 1) {
+        alert("Arrange your words on the grid by clicking the green 'Arrange!' button on the left side of the screen.");
+        return false;
+    }
+
+    if (cluesWritten == 0) {
+        alert("Not all clues are written.  Please go through the 'Clues' section at the right side of your grid and write any clues that show up as blank.");
+        return false;
+    }
+
+    if ($.trim($('#title_input').val()) == '') {
+        alert("Give your puzzle a title first!");
+        return false;
+    }
+
+    if (jUserId != 0) {
+        changeGridToMin('automatic');
+        $(formSpot).submit();
+    }
+}
+
+function saveNow() {
+    saveGrid();
+    aaListSave();
+}
+
+async function saveGrid(useSendBeacon) {
+    if(!adminViewer){ //do not save if this is an admin viewer
+        if (jUserId != 0) {
+            if (needsWholesaleSave == 1) {
+                wholesaleSave();
+            } else {
+                //set before sending ajax so subsequent edits will save automatically, in case changes happen
+                gridEdited = 0;
+
+                puzzleString = runningStringList[0];
+                if (puzzleString == '') {
+                    runningStringList = [];
+                    recordString();
+                    puzzleString = runningStringList[0];
+                    if (puzzleString == '') {
+                        alert('An error has occurred.  Trying to recover your puzzle...');
+                        recordSessionEvent('grid_lost_save_grid');
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                        return false;
+                    }
+                }
+                var payload = {
+                    puzzle_id: jPuzzleId,
+                    field: "puzzle_string",
+                    value: puzzleString
+                };
+
+                if(useSendBeacon && typeof navigator.sendBeacon != 'undefined') {
+                    var fd = new FormData();
+                    fd.append('puzzle_id', jPuzzleId)
+                    fd.append('field', "puzzle_string")
+                    fd.append('value', puzzleString)
+                    navigator.sendBeacon('/save_puzzle_field', fd);
+                    return;
+                }
+
+                if (useSendBeacon) {
+                    try {
+                        await request.withKeepalive('/save_puzzle_field', new URLSearchParams(payload), {
+                            method: 'POST',
+                            responseType: 'text'
+                        });
+                    } catch (error) {
+                        console.error('Error in saveGrid:', error);
+                        if (typeof logErrors === 'function') {
+                            logErrors(createRequestError(error, 'saveGrid'), {
+                                file: 'simple-puzzle.js',
+                                custom_function: 'saveGrid'
+                            });
+                        }
+                    }
+                    return;
+                }
+
+                try {
+                    var returned = await request.form('/save_puzzle_field', payload, {
+                        method: 'POST',
+                        responseType: 'text'
+                    });
+
+                    if (returned != "success") {
+                        alert("Error saving - you are no longer logged in");
+                        location.reload(true);
+                    } else {
+                        tempDate = new Date();
+                        lastSavedOn = tempDate.toLocaleTimeString(navigator.language, {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        if (gridEdited == 0) {
+                            document.getElementById('save_status_text').innerHTML = 'Saved';
+                        } else {
+                            document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in saveGrid:', error);
+                    if (typeof logErrors === 'function') {
+                        logErrors(createRequestError(error, 'saveGrid'), {
+                            file: 'simple-puzzle.js',
+                            custom_function: 'saveGrid'
+                        });
+                    }
+
+                    if (isUnloading == 0) {
+                        document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+                        alert("There was an error saving your grid, likely due to a spotty internet connection.  We will try again automatically in a minute.");
+                    }
+                }
+            }
+        }
+    }
+}
+
+function initializeGrid() {
+    if (initialized) return;
+    var puzzleGrid = document.getElementById("puzzle_grid");
+
+    //walks along puzzleText
+    var i = 0;
+
+    var acrossClues = document.getElementById("across_clues");
+    var downClues = document.getElementById("down_clues");
+
+    for (y = 1; y <= puzzleDimension; y++) {
+        var pRow = document.createElement("tr");
+        pRow.setAttribute("id", "puzzle_row" + y);
+        pRow.setAttribute("class", "puzzle_row");
+
+        for (x = 1; x <= puzzleDimension; x++) {
+
+            var pCell = document.createElement("td");
+            pCell.setAttribute("id", "puzzle_cell" + x + "-" + y);
+            pCell.setAttribute("class", "puzzle_cell");
+            pCell.setAttribute("data-x", x);
+            pCell.setAttribute("data-y", y);
+
+            var numDiv = document.createElement("div");
+            numDiv.setAttribute("id", "cell_number" + x + "-" + y);
+            numDiv.setAttribute("class", "cell_number");
+            numDiv.setAttribute("data-x", x);
+            numDiv.setAttribute("data-y", y);
+
+            var charDiv = document.createElement("div");
+            charDiv.setAttribute("id", "cell_char" + x + "-" + y);
+            charDiv.setAttribute("class", "cell_char");
+            charDiv.setAttribute("data-x", x);
+            charDiv.setAttribute("data-y", y);
+
+            if (navigator.userAgent.match(/(iPod|iPhone|iPad|android)/i)) {
+                charDiv.setAttribute("contenteditable", true);
+            }
+
+            $(pCell).on('click', function () {
+                if (activeCell != this) {
+                    if (activeCell) {
+                        $(activeCell).removeClass('active_cell');
+                    }
+
+                    $(this).addClass('active_cell');
+                    activeCell = this;
+                    $(this).prepend($('#dir_pointer_holder'));
+
+                } else {
+                    if (acrossBinary == true) {
+                        acrossBinary = false;
+                        $("#dir_pointer").rotate({
+                            animateTo: 90,
+                            duration: 200
+                        });
+
+                    } else {
+                        acrossBinary = true;
+                        $("#dir_pointer").rotate({
+                            animateTo: 0,
+                            duration: 200
+                        });
+                    }
+                }
+                if(acrossBinary) {
+                    var newClue = $('#clue_holder_across'+x+'-'+y);
+                    newClue.addClass('selected');
+                } else {
+                    var newClue = $('#clue_holder_down'+x+'-'+y);
+                    newClue.addClass('selected');
+                }
+                setSubActive();
+            });
+
+            thisChar = puzzleText.charAt(i);
+            i++;
+
+            if (!puzzleArray[x]) {
+                puzzleArray[x] = [];
+            }
+            puzzleArray[x][y] = thisChar;
+
+            if (thisChar == 0) {
+                //no action, blank cell
+            } else if (thisChar == 1) {
+                $(pCell).addClass('black_square');
+            } else {
+                charDiv.appendChild(document.createTextNode(getRealLetter(thisChar)));
+                $(charDiv).addClass('filled_cell_char');
+            }
+            pCell.appendChild(numDiv);
+            pCell.appendChild(charDiv);
+            pRow.appendChild(pCell);
+
+
+            //create clue holders
+            var cHolderAcross = document.createElement("div");
+            cHolderAcross.setAttribute("id", "clue_holder_across" + x + "-" + y);
+            cHolderAcross.setAttribute("class", "clue_holder");
+            cHolderAcross.setAttribute("data-x", x);
+            cHolderAcross.setAttribute("data-y", y);
+
+            var cNumberAcross = document.createElement("div");
+            cNumberAcross.setAttribute("id", "clue_number_across" + x + "-" + y);
+            cNumberAcross.setAttribute("class", "clue_number");
+            cNumberAcross.setAttribute("data-x", x);
+            cNumberAcross.setAttribute("data-y", y);
+
+            var cTextAcross = document.createElement("textarea");
+            cTextAcross.setAttribute("id", "clue_text_across" + x + "-" + y);
+            cTextAcross.setAttribute("class", "clue_text");
+            cTextAcross.setAttribute("data-x", x);
+            cTextAcross.setAttribute("data-y", y);
+            cTextAcross.addEventListener('input', function() {
+                this.value = this.value.replace(emojiRegexString, ''); // Regex to remove emojis
+            });
+            cHolderAcross.appendChild(cNumberAcross);
+            cHolderAcross.appendChild(cTextAcross);
+            acrossClues.appendChild(cHolderAcross);
+
+            var cHolderDown = document.createElement("div");
+            cHolderDown.setAttribute("id", "clue_holder_down" + x + "-" + y);
+            cHolderDown.setAttribute("class", "clue_holder");
+            cHolderDown.setAttribute("data-x", x);
+            cHolderDown.setAttribute("data-y", y);
+
+            var cNumberDown = document.createElement("div");
+            cNumberDown.setAttribute("id", "clue_number_down" + x + "-" + y);
+            cNumberDown.setAttribute("class", "clue_number");
+            cNumberDown.setAttribute("data-x", x);
+            cNumberDown.setAttribute("data-y", y);
+
+            var cTextDown = document.createElement("textarea");
+            cTextDown.setAttribute("id", "clue_text_down" + x + "-" + y);
+            cTextDown.setAttribute("class", "clue_text");
+            cTextDown.setAttribute("data-x", x);
+            cTextDown.setAttribute("data-y", y);
+            cTextDown.addEventListener('input', function() {
+                this.value = this.value.replace(emojiRegexString, '');
+            });
+
+            cHolderDown.appendChild(cNumberDown);
+            cHolderDown.appendChild(cTextDown);
+            downClues.appendChild(cHolderDown);
+            /*************************************
+             * since clueValues isn't organized,
+             * faster to parse it once into clueArray
+             * and add to clues instead of checking
+             * for each clue whether it exists
+             *************************************/
+        }
+        puzzleGrid.appendChild(pRow);
+    }
+    // remove emojis from TITLE, WORD and CLUE
+    $('#title_input, .answer_word, .answer_clue').on('input', function (event) {
+        this.value = this.value.replace(emojiRegexString, '');
+    });
+
+    //capitalize first letter of clue
+    $('.clue_text, .answer_clue').on('keydown', function (event) {
+        if (this.selectionStart == 0 && event.keyCode >= 65 && event.keyCode <= 90 && !(event.shiftKey) && !(event.ctrlKey) && !(event.metaKey) && !(event.altKey)) {
+            var $t = $(this);
+            event.preventDefault();
+            var char = String.fromCharCode(event.keyCode);
+            $t.val(char + $t.val().slice(this.selectionEnd));
+            this.setSelectionRange(1, 1);
+        }
+    });
+
+    $(document).on("mousedown", function (event) {
+        if (!($(event.target).hasClass('cell_char') || $(event.target).hasClass('cell_number') || $(event.target).hasClass('dir_arrow'))) {
+            removeActive();
+        }
+    });
+
+    $(document).on("keypress", function(evt) {
+        evt = (evt) ? evt : ((event) ? event : null);
+        if (evt) {
+            var charCode = (evt.charCode) ? evt.charCode : evt.keyCode;
+            // charCode 95 is underscore
+            if(activeCell && activeCell !== null && ((charCode >= 192 && charCode <= 383) || charCode == 95 || charCode == 39 || charCode == 8217)) { // All special characters
+                x = parseInt(activeCell.getAttribute('data-x'));
+                y = parseInt(activeCell.getAttribute('data-y'));
+                evt.preventDefault();
+                if(charCode == 39) {
+                    charCode = 8217;
+                }
+                theChar = String.fromCharCode(charCode);
+                document.getElementById('cell_char'+x+'-'+y).innerHTML = theChar;
+                puzzleArray[x][y] = getMaskLetter(theChar);
+                $('#cell_char' + x + '-' + y).addClass('filled_cell_char');
+                if(gridEdited == 0) {
+                    gridEdited = 1;
+                }
+                if(acrossBinary) {
+                    if(typeof puzzleArray[x+1] !== 'undefined') {
+                        if(puzzleArray[x+1][y] != 1) {
+                            //simulate pressing the right key
+                            var kDown = jQuery.Event("keydown");
+                            kDown.keyCode = 39;
+                            $(document).trigger(kDown);
+                        }
+                    }
+                } else {
+                    if(typeof puzzleArray[x][y+1] !== 'undefined') {
+                        if(puzzleArray[x][y+1] != 1) {
+                            var kDown = jQuery.Event("keydown");
+                            kDown.keyCode = 40;
+                            $(document).trigger(kDown);
+                        }
+                    }
+                }
+                recordString();
+            }
+        }
+    });
+
+    $(document).on("keydown", function (event) {
+        /*
+        If an active cell, need to process:
+        Arrow keys
+        Enter (move down)
+        Tab (move right)
+        Shift-Enter (move up)
+        Shift-Tab (move left)
+        a-z,A-Z (add character and move in the direction of the 'direction' variable)
+        Escape (unhighlight active cell)
+        Space (switch across and down variable and subActive)
+        Backspace (if current square has a letter, delete, otherwise move back and delete)
+        Delete
+        Home
+        End
+        */
+        if (activeCell && activeCell !== null && !(event.ctrlKey) && !(event.altKey) && !(event.metaKey)) {
+            x = parseInt(activeCell.getAttribute('data-x'));
+            y = parseInt(activeCell.getAttribute('data-y'));
+            if ((event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 65 && event.keyCode <= 90)) { //0-9, A-Z, a-z
+
+                event.preventDefault();
+                theChar = String.fromCharCode(event.keyCode);
+                document.getElementById('cell_char' + x + '-' + y).innerHTML = theChar;
+                puzzleArray[x][y] = getMaskLetter(theChar);
+
+                $('#cell_char' + x + '-' + y).addClass('filled_cell_char');
+
+                if (gridEdited == 0) {
+                    gridEdited = 1;
+                    if (jUserId != 0) {
+                        document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+                    }
+                }
+
+                if (acrossBinary) {
+                    if (typeof puzzleArray[x + 1] !== 'undefined') {
+                        if (puzzleArray[x + 1][y] != 1) {
+                            //simulate pressing the right key
+                            var kDown = jQuery.Event("keydown");
+                            kDown.keyCode = 39;
+                            $(document).trigger(kDown);
+                        }
+                    }
+                } else {
+                    if (typeof puzzleArray[x][y + 1] !== 'undefined') {
+                        if (puzzleArray[x][y + 1] != 1) {
+                            var kDown = jQuery.Event("keydown");
+                            kDown.keyCode = 40;
+                            $(document).trigger(kDown);
+                        }
+                    }
+                }
+
+                recordString();
+            } else if (event.keyCode == 37 || (event.keyCode == 9 && (event.shiftKey))) { //arrow left OR (tab with shiftKey)
+
+                event.preventDefault();
+                var targetX = x - 1;
+
+                if(targetX == 0) {
+                    targetX = puzzleArray.length - 1;
+                }
+
+                while (typeof puzzleArray[targetX] !== 'undefined') {
+                    if (puzzleArray[targetX][y] != 1) {
+                        $('#cell_char' + targetX + '-' + y).click();
+                        break;
+                    }
+                    targetX--;
+                }
+
+            } else if (event.keyCode == 38 || (event.keyCode == 13 && (event.shiftKey))) { //arrow up OR (enter with shiftKey)
+
+                event.preventDefault();
+                var targetY = y - 1;
+                if(targetY == 0) {
+                    targetY=  puzzleArray[x].length - 1;
+                }
+                while (typeof puzzleArray[x][targetY] !== 'undefined') {
+                    if (puzzleArray[x][targetY] != 1) {
+                        $('#cell_char' + x + '-' + targetY).click();
+                        break;
+                    }
+                    targetY--;
+                }
+
+            } else if (event.keyCode == 39 || (event.keyCode == 9 && !(event.shiftKey))) { //arrow right OR (tab without shiftKey)
+
+                event.preventDefault();
+                var targetX = x + 1;
+                if(targetX == puzzleArray.length) {
+                    targetX = 1;
+                }
+                while (typeof puzzleArray[targetX] !== 'undefined') {
+                    if (puzzleArray[targetX][y] != 1) {
+                        $('#cell_char' + targetX + '-' + y).click();
+                        break;
+                    }
+                    targetX++;
+                }
+            } else if (event.keyCode == 40 || (event.keyCode == 13 && !(event.shiftKey))) { //arrow down OR (enter without shiftKey)
+
+                event.preventDefault();
+                var targetY = y + 1;
+                if(targetY == puzzleArray[x].length) {
+                    targetY = 1;
+                }
+                while (typeof puzzleArray[x][targetY] !== 'undefined') {
+                    if (puzzleArray[x][targetY] != 1) {
+                        $('#cell_char' + x + '-' + targetY).click();
+                        break;
+                    }
+                    targetY++;
+                }
+            } else if (event.keyCode == 27) { //escape key
+
+                //will trigger removal of active cell
+                //not preventing default - may get rid of browser search, for example
+                $(document).click();
+
+            } else if (event.keyCode == 32) { //space key
+
+                //seems to scroll down in Chrome?  preventDefault fixes.
+                event.preventDefault();
+                $(activeCell).click();
+
+            } else if (event.keyCode == 8) { //backspace key
+
+                event.preventDefault(); //backspace acts as a back button in FF
+                if ($('#cell_char' + x + '-' + y).html().length > 0) {
+
+                    $('#cell_char' + x + '-' + y).html('');
+                    $('#cell_char' + x + '-' + y).removeClass('filled_cell_char');
+                    puzzleArray[x][y] = '0';
+
+                    if (gridEdited == 0) {
+                        gridEdited = 1;
+                        if (jUserId != 0) {
+                            document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+                        }
+                    }
+                    recordString();
+                } else {
+                    if (acrossBinary) {
+                        if (typeof puzzleArray[x - 1] !== 'undefined' && puzzleArray[x - 1][y] != 1) {
+                            if (gridEdited == 0 && $('#cell_char' + (x - 1) + '-' + y).html().length > 0) {
+                                gridEdited = 1;
+                                if (jUserId != 0) {
+                                    document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+                                }
+                            }
+
+                            $('#cell_char' + (x - 1) + '-' + y).html('');
+                            puzzleArray[x - 1][y] = '0';
+
+                            $('#cell_char' + (x - 1) + '-' + y).removeClass('filled_cell_char');
+
+                            $('#cell_char' + (x - 1) + '-' + y).click();
+                            recordString();
+                        }
+                    } else {
+                        if (typeof puzzleArray[x][y - 1] !== 'undefined' && puzzleArray[x][y - 1] != 1) {
+                            if (gridEdited == 0 && $('#cell_char' + x + '-' + (y - 1)).html().length > 0) {
+                                gridEdited = 1;
+                                if (jUserId != 0) {
+                                    document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+                                }
+                            }
+
+                            $('#cell_char' + x + '-' + (y - 1)).html('');
+                            puzzleArray[x][y - 1] = '0';
+
+                            $('#cell_char' + x + '-' + (y - 1)).removeClass('filled_cell_char');
+
+                            $('#cell_char' + x + '-' + (y - 1)).click();
+
+                            recordString();
+                        }
+                    }
+                }
+            } else if (event.keyCode == 46) { //delete key
+                if ($('#cell_char' + x + '-' + y).html().length > 0) {
+                    $('#cell_char' + x + '-' + y).html('');
+                    puzzleArray[x][y] = '0';
+
+                    $('#cell_char' + x + '-' + y).removeClass('filled_cell_char');
+
+                    if (gridEdited == 0) {
+                        gridEdited = 1;
+                        if (jUserId != 0) {
+                            document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+                        }
+                    }
+
+                    recordString();
+                }
+            } else if (event.keyCode == 36) { //home key
+                event.preventDefault();
+                if (acrossBinary) {
+                    nextX = x;
+                    while (typeof puzzleArray[nextX - 1] !== 'undefined' && puzzleArray[nextX - 1][y] != 1) {
+                        nextX--;
+                    }
+
+                    if (nextX != x) {
+                        $('#cell_char' + nextX + '-' + y).click();
+                    }
+                } else {
+                    nextY = y;
+                    while (typeof puzzleArray[x][nextY - 1] !== 'undefined' && puzzleArray[x][nextY - 1] != 1) {
+                        nextY--;
+                    }
+
+                    if (nextY != y) {
+                        $('#cell_char' + x + '-' + nextY).click();
+                    }
+                }
+            } else if (event.keyCode == 35) { //end key
+                event.preventDefault();
+                if (acrossBinary) {
+                    nextX = x;
+                    while (typeof puzzleArray[nextX + 1] !== 'undefined' && puzzleArray[nextX + 1][y] != 1) {
+                        nextX++;
+                    }
+
+                    if (nextX != x) {
+                        $('#cell_char' + nextX + '-' + y).click();
+                    }
+                } else {
+                    nextY = y;
+                    while (typeof puzzleArray[x][nextY + 1] !== 'undefined' && puzzleArray[x][nextY + 1] != 1) {
+                        nextY++;
+                    }
+
+                    if (nextY != y) {
+                        $('#cell_char' + x + '-' + nextY).click();
+                    }
+                }
+            }
+        } else if (event.ctrlKey || event.metaKey) {
+            if(!$('#account_overlay,#alert_overlay,#general_overlay,#confirm_overlay,#make_suggestion_overlay,#report_issue_overlay').is(':visible')) {
+                if (!($(event.target).hasClass('clue_text') || event.target.id == 'title_input' || event.target.id == 'scratchpad')) {
+                    if (event.keyCode == 89) {
+                        event.preventDefault();
+                        redoChange();
+                    } else if (event.keyCode == 90) {
+                        event.preventDefault();
+                        undoChange();
+                    }
+                }
+            }
+        } else if (event.target.id == 'title_input' && event.keyCode == 13) {
+            $('#title_input').blur();
+            saveTitle($('#title_input'));
+        }
+    });
+
+    initializeClueValues();
+    recordString();
+    initializeAutoArrangeList();
+    $('#puzzle_grid_holder').removeClass('temporary-grid-holder');
+    $('#clue_holder').css({opacity: 1});
+    setDimensions();
+    initialized = true;
+}
+
+function initializeAutoArrangeList() {
+
+    //prevents issues with autoArrangeList being empty
+    if (autoArrangeList != "[]") {
+
+        i = 1;
+        for (z in autoArrangeList) {
+            if(i > 50) {
+                break; // only allow 50 items
+            }
+            $('#answer_word'+i).val(autoArrangeList[z]['word']);
+            $('#answer_clue'+i).val(autoArrangeList[z]['clue']);
+            i++;
+        }
+
+        if (prefilled) {
+            autoArrange();
+            if(jUserId != 0) {
+                localStorage.setItem('login', 'i' + uniqueTabId);
+                localStorage.setItem('login', 'o' + uniqueTabId);
+            }
+        }
+    }
+}
+
+function setDimensions() {
+    var myWidth = $('#puzzle_grid_holder').outerWidth(true) + $('#clue_holder').outerWidth(true) + 20;
+    var bodyTargetWidth = Math.max(myWidth, 1302);
+
+    $(document.body).css({
+        'min-width': bodyTargetWidth
+    });
+    $('.clues_holder').css({
+        'height': $('#puzzle_grid').outerHeight(false) - $('#across_clue_header').outerHeight(true) - ($('#across_clues').outerHeight(true) - $('#across_clues').height()) - 2
+    });
+}
+
+function initializeClueValues() {
+
+    //prevents issues with clueValues being empty
+    if (clueValues != "[]") {
+        for (z in clueValues) {
+            x = (parseInt(clueValues[z]['puzzle_position']) % puzzleDimension) + 1;
+            y = Math.floor(parseInt(clueValues[z]['puzzle_position']) / puzzleDimension) + 1;
+            acrossDir = clueValues[z]['across_binary'];
+            if (acrossDir == 1) {
+                document.getElementById("clue_text_across" + x + "-" + y).innerHTML = clueValues[z]['clue_text'];
+            } else {
+                document.getElementById("clue_text_down" + x + "-" + y).innerHTML = clueValues[z]['clue_text'];
+            }
+        }
+    }
+
+    $('.clue_text').on("focus", function () {
+        setClueSubActive(this)
+    })
+    .on("blur", function () {
+        setSubActive();
+    })
+    //saveClue used to be onBlur.
+    .on('change', function () {
+        saveClue(this)
+    }).on("keydown", function(e){
+        if (e.key === 'Tab' || e.keyCode === 9) {
+            var firstFocusableEl = $('.clue_text:visible')[0];
+            var lastFocusableEl = $('.clue_text:visible').last()[0];
+
+            if ( e.shiftKey ) /* shift + tab */ {
+                if (document.activeElement === firstFocusableEl) {
+                    lastFocusableEl.focus();
+                    e.preventDefault();
+                }
+            } else /* tab */ {
+                if (document.activeElement === lastFocusableEl) {
+                    firstFocusableEl.focus();
+                    e.preventDefault();
+                }
+            }
+        }
+    });;
+}
+
+function setClueSubActive(cluePlace) {
+    var x = parseInt(cluePlace.getAttribute('data-x'));
+    var y = parseInt(cluePlace.getAttribute('data-y'));
+
+    $('.clue_holder.selected').removeClass('selected');
+
+    if (cluePlace.id.substr(10, 6) == 'across') {
+        var newClue = $('#clue_holder_across'+x+'-'+y);
+        newClue.addClass('selected');
+
+        while (typeof puzzleArray[x] !== 'undefined' && puzzleArray[x][y] != 0) {
+            $('#puzzle_cell' + x + '-' + y).addClass('sub_active_cell');
+            x++;
+        }
+    } else {
+        var newClue = $('#clue_holder_down'+x+'-'+y);
+        newClue.addClass('selected');
+
+        while (typeof puzzleArray[x][y] !== 'undefined' && puzzleArray[x][y] != 0) {
+            $('#puzzle_cell' + x + '-' + y).addClass('sub_active_cell');
+            y++;
+        }
+    }
+}
+
+function removeActive() {
+    $(activeCell).removeClass('active_cell');
+    activeCell = null;
+    $("#dir_pointer").rotate({
+        animateTo: 0,
+        duration: 0
+    });
+    $('#dir_pointer_holder_holder').prepend($('#dir_pointer_holder'));
+    acrossBinary = true;
+    setSubActive();
+}
+
+function scrollToClue(direction, x, y) {
+    var curScrollTop = $('#' + direction + '_clues').scrollTop();
+    var $clueSelector = $('#clue_holder_' + direction + x + '-' + y);
+
+    if (!($clueSelector.length && $clueSelector.is(':visible'))) {
+        return false;
+    }
+    var clueSpot = $clueSelector.position().top + curScrollTop;
+    var divHeight = $('#' + direction + '_clues').height();
+    var curScrollBottom = curScrollTop + divHeight;
+    var fullScrollHeight = document.getElementById(direction + '_clues').scrollHeight;
+    //padding is excluded from height, need to adjust it
+    var clueHeight = $('#clue_holder_' + direction + x + '-' + y).height() + 14;
+
+    if (clueSpot < curScrollTop) {
+        if (clueSpot - 72 < 0) {
+            $('#' + direction + '_clues').scrollTop(0);
+        }
+        else {
+            $('#' + direction + '_clues').scrollTop(clueSpot - 72);
+        }
+    }
+    else if (clueSpot + clueHeight > curScrollTop + divHeight) {
+        if (clueSpot + clueHeight + 72 > fullScrollHeight) {
+            $('#' + direction + '_clues').scrollTop(fullScrollHeight - divHeight);
+        }
+        else {
+            $('#' + direction + '_clues').scrollTop(clueSpot + clueHeight + 72 - divHeight);
+        }
+    }
+}
+
+function setSubActive() {
+    $('.sub_active_cell').removeClass('sub_active_cell');
+
+    //remove the selected class from whatever elem currently uses it.
+    $('.clue_holder.selected').removeClass('selected');
+
+    if (activeCell) {
+        activeX = parseInt(activeCell.getAttribute('data-x'));
+        activeY = parseInt(activeCell.getAttribute('data-y'));
+
+        if (acrossBinary) {
+            x = activeX - 1;
+            while (typeof puzzleArray[x] !== 'undefined' && puzzleArray[x][activeY] != 0) {
+                $('#puzzle_cell' + x + '-' + activeY).addClass('sub_active_cell');
+                x--;
+            }
+            // highlight clue
+            var newClue = $('#clue_holder_across'+(x+1)+'-'+activeY);
+            newClue.addClass('selected')
+            scrollToClue('across', x+1, activeY)
+
+            x = activeX + 1;
+
+            while (typeof puzzleArray[x] !== 'undefined' && puzzleArray[x][activeY] != 0) {
+                $('#puzzle_cell' + x + '-' + activeY).addClass('sub_active_cell');
+                x++;
+
+            }
+        } else {
+            y = activeY - 1;
+            while (typeof puzzleArray[activeX][y] !== 'undefined' && puzzleArray[activeX][y] != 0) {
+                $('#puzzle_cell' + activeX + '-' + y).addClass('sub_active_cell');
+                y--;
+            }
+            // highlight clue
+            var newClue = $('#clue_holder_down'+activeX+'-'+(y+1));
+            newClue.addClass('selected')
+            scrollToClue('down', activeX, y+1)
+
+            y = activeY + 1;
+            while (typeof puzzleArray[activeX][y] !== 'undefined' && puzzleArray[activeX][y] != 0) {
+                $('#puzzle_cell' + activeX + '-' + y).addClass('sub_active_cell');
+                y++;
+            }
+        }
+    }
+}
+
+
+function setNumbers() {
+    numUpTo = 1;
+    for (y = 1; y <= puzzleDimension; y++) {
+        for (x = 1; x <= puzzleDimension; x++) {
+            //look for filled squares with above or to the left being empty or undefined, AND length at least 2 in that direction
+            if (puzzleArray[x][y] != 1 && puzzleArray[x][y] != 0 && (((typeof puzzleArray[x - 1] === 'undefined' || puzzleArray[x - 1][y] == 0) && (typeof puzzleArray[x + 1] !== 'undefined' && puzzleArray[x + 1][y] != 0)) || ((typeof puzzleArray[x][y - 1] === 'undefined' || puzzleArray[x][y - 1] == 0) && (typeof puzzleArray[x][y + 1] !== 'undefined' && puzzleArray[x][y + 1] != 0)))) {
+                document.getElementById('cell_number' + x + '-' + y).innerHTML = numUpTo;
+
+                //set across clue display
+                if ((typeof puzzleArray[x - 1] === 'undefined' || puzzleArray[x - 1][y] == 0) && (typeof puzzleArray[x + 1] !== 'undefined' && puzzleArray[x + 1][y] != 0)) {
+                    document.getElementById('clue_holder_across' + x + '-' + y).style.display = 'block';
+                    document.getElementById('clue_number_across' + x + '-' + y).innerHTML = numUpTo;
+                    $('#clue_text_across' + x + '-' + y).autosize();
+                } else {
+                    document.getElementById('clue_holder_across' + x + '-' + y).style.display = 'none';
+                }
+
+                //set down clue display
+                if ((typeof puzzleArray[x][y - 1] === 'undefined' || puzzleArray[x][y - 1] == 0) && (typeof puzzleArray[x][y + 1] !== 'undefined' && puzzleArray[x][y + 1] != 0)) {
+                    document.getElementById('clue_holder_down' + x + '-' + y).style.display = 'block';
+                    document.getElementById('clue_number_down' + x + '-' + y).innerHTML = numUpTo;
+                    $('#clue_text_down' + x + '-' + y).autosize();
+                } else {
+                    document.getElementById('clue_holder_down' + x + '-' + y).style.display = 'none';
+                }
+
+                numUpTo++;
+            } else {
+                document.getElementById('cell_number' + x + '-' + y).innerHTML = '';
+                document.getElementById('clue_holder_across' + x + '-' + y).style.display = 'none';
+                document.getElementById('clue_holder_down' + x + '-' + y).style.display = 'none';
+            }
+        }
+    }
+}
+
+async function saveClue(clueTextarea, useSendBeacon) {
+    if (jUserId != 0 && !adminViewer) {
+        if (clueTextarea.id?.slice(10, 16) === 'across') {
+            acrossVal = 1;
+        } else {
+            acrossVal = 0;
+        }
+
+        clueValue = $.trim($(clueTextarea).val());
+
+        x = parseInt(clueTextarea.getAttribute('data-x'));
+        y = parseInt(clueTextarea.getAttribute('data-y'));
+        puzzlePosition = (puzzleDimension * (y - 1)) + x - 1;
+
+        if(useSendBeacon && typeof navigator.sendBeacon != 'undefined') {
+            var fd = new FormData();
+            fd.append('puzzle_id', jPuzzleId)
+            fd.append('clue_value', clueValue)
+            fd.append('puzzle_position', puzzlePosition)
+            fd.append('across_binary', acrossVal)
+            navigator.sendBeacon('/clue_change', fd);
+        } else {
+            try {
+                var returned = await request.form('/clue_change', {
+                    puzzle_id: jPuzzleId,
+                    clue_value: clueValue,
+                    puzzle_position: puzzlePosition,
+                    across_binary: acrossVal
+                }, {
+                    method: 'POST',
+                    responseType: 'text'
+                });
+                if (returned != "success") {
+                    alert("Error saving - you are no longer logged in");
+                    location.reload(true);
+                }
+            } catch (error) {
+                console.error('Error in saveClue:', error);
+                if (typeof logErrors === 'function') {
+                    logErrors(createRequestError(error, 'saveClue'), {
+                        file: 'simple-puzzle.js',
+                        custom_function: 'saveClue'
+                    });
+                }
+
+                if (isUnloading == 0) {
+                    alert("There may have been an error saving your clue, possibly due to a spotty internet connection.  Please try again.");
+                    clueTextarea.innerHTML = "";
+                }
+            }
+        }
+
+    }
+}
+
+async function saveTitle($tSpot) {
+    var theTitle = $.trim($tSpot.val());
+
+    if(theTitle != '') {
+        $('#titleTag').text(theTitle);
+    } else if(jUserId != 0) {
+        $('#titleTag').text('My New Puzzle');
+    } else {
+        $('#titleTag').text('Crossword Puzzle Maker | Make Your Own Crossword Puzzle');
+    }
+
+    if (jUserId != 0 && !adminViewer) {
+        try {
+            var returned = await request.form('/save_puzzle_field', {
+                puzzle_id: jPuzzleId,
+                field: "title",
+                value: theTitle
+            }, {
+                method: 'POST',
+                responseType: 'text'
+            });
+            if (returned != "success") {
+                alert("Error saving - you are no longer logged in");
+                location.reload(true);
+            }
+        } catch (error) {
+            console.error('Error in saveTitle:', error);
+            if (typeof logErrors === 'function') {
+                logErrors(createRequestError(error, 'saveTitle'), {
+                    file: 'simple-puzzle.js',
+                    custom_function: 'saveTitle'
+                });
+            }
+
+            if (isUnloading == 0) {
+                alert("There was an error saving your title, likely due to a spotty internet connection.  Please check your internet connection and try again.");
+                $tSpot.val('');
+            }
+        }
+    }
+}
+
+async function saveScratchpad($sSpot) {
+    if (jUserId != 0 && !adminViewer) {
+        var theScratchpad = $.trim($sSpot.val());
+        try {
+            var returned = await request.form('/save_puzzle_field', {
+                puzzle_id: jPuzzleId,
+                field: "scratchpad_text",
+                value: theScratchpad
+            }, {
+                method: 'POST',
+                responseType: 'text'
+            });
+            if (returned != "success") {
+                alert("Error saving - you are no longer logged in");
+                location.reload(true);
+            }
+        } catch (error) {
+            console.error('Error in saveScratchpad:', error);
+            if (typeof logErrors === 'function') {
+                logErrors(createRequestError(error, 'saveScratchpad'), {
+                    file: 'simple-puzzle.js',
+                    custom_function: 'saveScratchpad'
+                });
+            }
+
+            if (isUnloading == 0) {
+                alert("There was an error saving your scratchpad, likely due to a spotty internet connection.  Click on the field to edit your scratchpad and then click somewhere else to try again.");
+            }
+        }
+    }
+}
+
+function logoutHandle() {
+    if (justLoggedOut == "1") {
+        //prevents weird bugs with localStorage (e.g. safari private browsing, possible
+        try {
+            //Along with watcher on headerButtonProcess, will cause a page reload in other tabs
+            localStorage.setItem('login', 'i' + uniqueTabId);
+            localStorage.setItem('login', 'o' + uniqueTabId);
+        } catch (err) {}
+
+        $('#logout_message_box_holder').delay(250).fadeIn(500, 'swing', function () {
+            $('#logout_message_box_holder').delay(1100).fadeOut(500, 'swing');
+        });
+    }
+}
+
+function initializeLeft() {
+    setMainDocument()
+
+    $('#publish_button').tipTip({
+        defaultPosition: "left",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    var operatingSystem = $.os.name;
+    if (operatingSystem == 'win') {
+        document.getElementById('undo_button').setAttribute('title', 'Undo Grid Edit (Ctrl + Z)');
+        document.getElementById('redo_button').setAttribute('title', 'Redo Grid Edit (Ctrl + Y)');
+    } else if (operatingSystem == 'mac') {
+        document.getElementById('undo_button').setAttribute('title', 'Undo Grid Edit (Cmnd + Z)');
+        document.getElementById('redo_button').setAttribute('title', 'Redo Grid Edit (Cmnd + Y)');
+    } else {
+        document.getElementById('undo_button').setAttribute('title', 'Undo Grid Edit (Ctrl + Z [win] / Cmnd + Z [mac])');
+        document.getElementById('redo_button').setAttribute('title', 'Redo Grid Edit (Ctrl + Y [win] / Cmnd + Y [mac])');
+    }
+
+    $('#undo_button').tipTip({
+        defaultPosition: "top",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#redo_button').tipTip({
+        defaultPosition: "top",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+
+    $('#unlock_question_mark').tipTip({
+        defaultPosition: "left",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#big_make_printable_question_mark').tipTip({
+        defaultPosition: "left",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#how_it_works_question_mark').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#auto_arrange_question_mark').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#move_text_question_mark').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#start_over_button').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#restart_tour_button').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#scratchpad_question_mark').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#auto_arrange_unarrange_button').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+
+    $('#save_progress_button').tipTip({
+        defaultPosition: "left",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+
+    $('#create_crossword_what_is_this_question_mark').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+
+    $('#spt_feature1_label').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#spt_feature2_label').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#spt_feature3_label').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#spt_feature4_label').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#spt_feature5_label').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+    $('#spt_feature6_label').tipTip({
+        defaultPosition: "right",
+        delay: 0,
+        edgeOffset: 5,
+        fadeIn: 0,
+        fadeOut: 0
+    });
+
+    if (jUserId != 0) {
+        document.getElementById('save_status_text').innerHTML = 'Saved';
+        tempDate = new Date();
+        lastSavedOn = tempDate.toLocaleTimeString(navigator.language, {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } else {
+        document.getElementById('save_status_text').innerHTML = 'Sign in to save';
+    }
+
+    $('.answer_clue').autosize();
+
+    $('.answer_word').on('keydown', function (event) {
+        const specialSpanishChars = ['ñ', 'Ñ', 'ç', 'Ç'];
+
+        if (specialSpanishChars.includes(event.key)) return;
+
+        if (!(
+            (event.keyCode >= 48 && event.keyCode <=57) ||
+            (event.keyCode >= 65 && event.keyCode <= 90) ||
+            (event.keyCode >= 112 && event.keyCode <= 123) ||
+            event.keyCode == 36 ||
+            event.keyCode == 32 ||
+            event.keyCode == 144 ||
+            event.keyCode == 145 ||
+            event.keyCode == 35 ||
+            event.keyCode == 37 ||
+            event.keyCode == 9 ||
+            event.keyCode == 38 ||
+            event.keyCode == 13 ||
+            event.keyCode == 39 ||
+            event.keyCode == 40 ||
+            event.keyCode == 27 ||
+            event.keyCode == 8 ||
+            event.keyCode == 46 ||
+            event.keyCode == 222 ||
+            event.keyCode == 189)
+        ) { //0-9, A-Z, a-z
+            event.preventDefault();
+        } else {
+            if(event.keyCode == 48) { // 0
+            }
+            if(event.keyCode == 49) { // 1
+            }
+        }
+    });
+
+    $('.answer_word').on('change', function () {
+        this.value = this.value.replace(/[^a-zA-Z0-9_ \'‘À-ÖØ-öø-ÿñÑçÇ]/g, ""); //jx1911 - accented characters
+        this.value = this.value.replace(/'/g, '’').replace(/ /g, '_');
+        aaListNeedsSave = 1;
+        document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+    });
+
+    $('.answer_clue').on('change', function () {
+        aaListNeedsSave = 1;
+        document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+    });
+
+}
+
+async function aaListSave(useSendBeacon) {
+    if (jUserId == 0 || adminViewer) {
+        return;
+    }
+
+    aaListNeedsSave = 0;
+    const arrangeList = [];
+
+    $('.answer_word').each(function (index) {
+        const clue = $(`#answer_clue${index + 1}`).val();
+
+        if (this.value.length > 0 || clue.length > 0) {
+            var lineItem = [];
+            lineItem[0] = this.value.toUpperCase();
+            lineItem[1] = clue;
+            arrangeList.push(lineItem);
+        }
+    });
+
+    const arrangeListJson = JSON.stringify(arrangeList);
+
+    if (useSendBeacon && typeof navigator.sendBeacon !== 'undefined') {
+        var fd = new FormData();
+        fd.append('puzzle_id', jPuzzleId);
+        fd.append('value', arrangeListJson);
+        navigator.sendBeacon('/save_auto_arrange_list', fd);
+        return;
+    }
+
+    try {
+        const response = await request.form('/save_auto_arrange_list', {
+            puzzle_id: jPuzzleId,
+            value: arrangeListJson
+        }, {
+            method: 'POST',
+            responseType: 'text'
+        });
+
+        if (response !== "success") {
+            alert("Error saving - you are no longer logged in");
+            location.reload(true);
+            return;
+        }
+
+        tempDate = new Date();
+        lastSavedOn = tempDate.toLocaleTimeString(navigator.language, {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        if (aaListNeedsSave == 0) {
+            document.getElementById('save_status_text').innerHTML = 'Saved';
+        } else {
+            document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+        }
+    } catch (error) {
+        console.error('Error in aaListSave:', error);
+
+        if (typeof logErrors === 'function') {
+            logErrors(createRequestError(error, 'aaListSave'), {
+                file: 'simple-puzzle.js',
+                custom_function: 'aaListSave'
+            });
+        }
+    }
+}
+
+function loadAlert() {
+    if (justPaid == "1") {
+        alert('<span id="fla_head">Success!</span><span id="jc_subhead_1">Your payment was processed, and your account is now fully unlocked.</span><span id="jc_subhead_2">You can now print or share your finished puzzle by clicking the big green \'Preview + Publish\' button in the top left of this screen.</span>');
+        justPaid = 0;
+
+        //prevents weird bugs with localStorage (e.g. safari private browsing, possible
+        try {
+            //Along with watcher on headerButtonProcess, will cause a page reload in other tabs so all tabs reflect paid
+            localStorage.setItem('login', 'i' + uniqueTabId);
+            localStorage.setItem('login', 'o' + uniqueTabId);
+        } catch (err) {}
+    }
+
+    if (justPaid == "2") {
+        alert('<span id="fla_head">Success!</span><span id="jc_subhead_1">Your payment was processed, and you can now print or share this puzzle when finished by clicking the big green \'Preview + Publish\' button in the top left of this screen.</span>');
+        justPaid = 0;
+
+        //prevents weird bugs with localStorage (e.g. safari private browsing, possible
+        try {
+            //Along with watcher on headerButtonProcess, will cause a page reload in other tabs so all tabs reflect paid - may be necessary if puzzle is open on two screens
+            localStorage.setItem('login', 'i' + uniqueTabId);
+            localStorage.setItem('login', 'o' + uniqueTabId);
+        } catch (err) {}
+    }
+}
+
+function launchTour() {
+    tourDenominator = Object.size(createTourText);
+    //check whether tips completed or ended
+    if (!(simpleTipStatus == "ended" || simpleTipStatus == "completed" || simpleTipsCompleted >= tourDenominator)) {
+        $('#end_tour_holder').on('click', function () {
+            endCreateTour();
+        });
+        if (simpleTipStatus == "not_started") {
+            showCreateTour(1, 1);
+        } else {
+            showCreateTour(Math.max(simpleTipsCompleted, 1), 1);
+        }
+    }
+}
+
+async function endCreateTour() {
+    $('#tour_holder').slideUp(400);
+    var tourCountString = document.getElementById('tour_count_holder').innerText;
+    if (eval(tourCountString) == 1) {
+        if (jUserId != 0 && !adminViewer) {
+            try {
+                await request.form('/update_tour_data', {
+                    field: 'simple_tip_status',
+                    value: 'completed'
+                }, {
+                    method: 'POST',
+                    responseType: 'text'
+                });
+            } catch (error) {
+                console.error('Error in endCreateTour:', error);
+                if (typeof logErrors === 'function') {
+                    logErrors(createRequestError(error, 'endCreateTour'), {
+                        file: 'simple-puzzle.js',
+                        custom_function: 'endCreateTour'
+                    });
+                }
+            }
+        } else {
+            newUserSimpleTipStatus = 'completed';
+        }
+    } else {
+        if (jUserId != 0 && !adminViewer) {
+            try {
+                await request.form('/update_tour_data', {
+                    field: 'simple_tip_status',
+                    value: 'ended'
+                }, {
+                    method: 'POST',
+                    responseType: 'text'
+                });
+            } catch (error) {
+                console.error('Error in endCreateTour:', error);
+                if (typeof logErrors === 'function') {
+                    logErrors(createRequestError(error, 'endCreateTour'), {
+                        file: 'simple-puzzle.js',
+                        custom_function: 'endCreateTour'
+                    });
+                }
+            }
+        } else {
+            newUserSimpleTipStatus = 'ended';
+        }
+    }
+}
+
+async function showCreateTour(tourIndex, tourFirstRun) {
+
+    tourIndex = parseInt(tourIndex);
+
+    if (jUserId != 0 && !adminViewer) {
+        try {
+            await request.form('/update_tour_data', {
+                field: 'simple_tips_seen',
+                value: tourIndex
+            }, {
+                method: 'POST',
+                responseType: 'text'
+            });
+        } catch (error) {
+            console.error('Error in showCreateTour:', error);
+            if (typeof logErrors === 'function') {
+                logErrors(createRequestError(error, 'showCreateTour'), {
+                    file: 'simple-puzzle.js',
+                    custom_function: 'showCreateTour'
+                });
+            }
+        }
+    } else {
+        newUserSimpleTipsCompleted = tourIndex;
+    }
+
+    if (tourIndex == 1) {
+        if (jUserId != 0 && !adminViewer) {
+            try {
+                await request.form('/update_tour_data', {
+                    field: 'simple_tip_status',
+                    value: 'in_progress'
+                }, {
+                    method: 'POST',
+                    responseType: 'text'
+                });
+            } catch (error) {
+                console.error('Error in showCreateTour:', error);
+                if (typeof logErrors === 'function') {
+                    logErrors(createRequestError(error, 'showCreateTour'), {
+                        file: 'simple-puzzle.js',
+                        custom_function: 'showCreateTour'
+                    });
+                }
+            }
+        } else {
+            newUserSimpleTipStatus = 'in_progress';
+        }
+    }
+
+    if (tourIndex > tourDenominator && !adminViewer) {
+        $('#tour_holder').slideUp(400);
+        if (jUserId != 0) {
+            try {
+                await request.form('/update_tour_data', {
+                    field: 'simple_tip_status',
+                    value: 'completed'
+                }, {
+                    method: 'POST',
+                    responseType: 'text'
+                });
+            } catch (error) {
+                console.error('Error in showCreateTour:', error);
+                if (typeof logErrors === 'function') {
+                    logErrors(createRequestError(error, 'showCreateTour'), {
+                        file: 'simple-puzzle.js',
+                        custom_function: 'showCreateTour'
+                    });
+                }
+            }
+        } else {
+            newUserSimpleTipStatus = 'completed';
+        }
+    } else {
+        showTourBox(createTourText[tourIndex], createTourNextText[tourIndex], tourIndex, tourDenominator);
+        $('#next_tour_button').off('click').on('click', async function () {
+            await showCreateTour(tourIndex + 1, 0);
+        });
+        $('#prev_tour_holder').off('click').on('click', async function () {
+            await showCreateTour(Math.max(tourIndex - 1, 1), 0);
+        });
+        if (tourFirstRun == 1) {
+            if (tourIndex == 1 && !(justLoggedOut == 1)) {
+                if (globalTourRestart == 1) {
+                    $('#tour_holder').slideDown(400);
+                    globalTourRestart = 0;
+                } else {
+                    $('#tour_holder').delay(1000).slideDown(400);
+                }
+            } else {
+                document.getElementById("tour_holder").style.display = 'block';
+            }
+        }
+    }
+}
+
+function checkBoxShadow() {
+    if (!('boxShadow' in document.body.style)) {
+        $('head').append('<link rel="stylesheet" type="text/css" href="/no_boxshadow_backup.css">');
+    }
+}
+
+function clearAutoArrangeListClick() {
+    //need to check if a lot of words on list
+    //if so, run myConfirm - otherwise just clear it
+    var myCounter = 0;
+    $('.answer_word, .answer_clue').each(function () {
+        if ($(this).val() != '') {
+            myCounter++;
+        }
+    });
+
+    //at 6 entries, user will have added 3 clue/answer pairs, and inexperienced users clicking on the fourth row (instead of scrolling/tabbing) may miss and hit the 'Clear List' button.
+    if (myCounter >= 6) {
+        //displays the first screen of the overlay, to confirm clue-answer pairs
+        myConfirm({
+            leftValue: "Do Not Erase",
+            rightValue: "Erase List",
+            headerValue: "Are you sure?",
+            bodyText: "This will erase everything on your Auto-Arrange list and let you start over.  Your grid will be unaffected."
+        });
+
+        $('#confirm_button_right').prop("onclick", null).off("click").on("click", function () {
+            clearAutoArrangeList();
+            document.getElementById("confirm_overlay").style.display = 'none';
+        });
+    } else {
+        clearAutoArrangeList();
+    }
+}
+
+function clearAutoArrangeList() {
+    $('.answer_word').val('');
+    $('.answer_clue').val('').trigger('autosize.resize');
+    aaListNeedsSave = 1;
+    document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+    document.getElementById('auto_arrange_fields').scrollTop = 0;
+}
+
+function arrangeSort(a, b) {
+    lengthA = a.word.length;
+    lengthB = b.word.length;
+    indexA = a.orig_index;
+    indexB = b.orig_index;
+    if (lengthA > lengthB) {
+        return -1;
+    } else if (lengthA < lengthB) {
+        return 1;
+    } else {
+        if (indexA < indexB) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+}
+//this is the new one
+function autoArrange() {
+
+    $.blockUI();
+
+    //may use this to speed up animation at end
+    nowTime = new Date().getTime();
+    arrangeList = [];
+    scratchpadEdited = 0;
+    var origDimension = puzzleDimension;
+
+    var wordsTooLong = 0;
+
+    $('.answer_word').each(function (index) {
+        if (this.value.length > 0) {
+            //max word length is 25
+            if (this.value.length <= 25) {
+                var lineItem = {};
+                lineItem['word'] = getRealWord(this.value.toUpperCase());
+                lineItem['clue'] = $(`#answer_clue${index+1}`).val();
+                lineItem['orig_index'] = index;
+                arrangeList.push(lineItem);
+            } else {
+                $('#scratchpad').val(this.value.toUpperCase() + ' - ' + $(`#answer_clue${index+1}`).val() + '\n' + $('#scratchpad').val());
+                scratchpadEdited = 1;
+                wordsTooLong++;
+            }
+        }
+    });
+
+    if (arrangeList.length == 0 && scratchpadEdited == 0) {
+        alert("Add words to the auto-arrange list to have them automatically added to your puzzle grid.");
+        $.unblockUI();
+    } else if (arrangeList.length == 0) {
+        if (scratchpadEdited == 1) {
+            shortVerb = 'were';
+            if (wordsTooLong == 1)
+                shortVerb = 'was';
+            alert(numToWord(wordsTooLong) + " of your words " + shortVerb + " too long and " + shortVerb + " added to the scratchpad. Add more words to the auto-arrange list to have them automatically added to your puzzle grid.");
+        }
+        $.unblockUI();
+    } else {
+        autoArranged = true;
+        unArranged = false;
+        var arrangeWordCount = arrangeList.length + wordsTooLong;
+        var wordsRemaining = 0;
+        arrangeList.sort(arrangeSort);
+
+        function addWord(listIndex, acrossFlg, xSpot, ySpot) {
+            if (acrossFlg == 1) {
+                clueLoc = document.getElementById('clue_text_across' + xSpot + '-' + ySpot);
+                clueLoc.value = arrangeList[listIndex]['clue'];
+                //saveClue(clueLoc);
+                for (i = 0; i < arrangeList[listIndex]['word'].length; i++) {
+                    puzzleArray[xSpot][ySpot] = arrangeList[listIndex]['word'][i];
+                    $('#cell_char' + xSpot + '-' + ySpot).addClass('filled_cell_char').html(getRealLetter(arrangeList[listIndex]['word'][i]));
+                    xSpot++;
+                }
+                nextAcross = false;
+            } else {
+                clueLoc = document.getElementById('clue_text_down' + xSpot + '-' + ySpot);
+                clueLoc.value = arrangeList[listIndex]['clue'];
+                //saveClue(clueLoc);
+                for (i = 0; i < arrangeList[listIndex]['word'].length; i++) {
+                    puzzleArray[xSpot][ySpot] = arrangeList[listIndex]['word'][i];
+                    $('#cell_char' + xSpot + '-' + ySpot).addClass('filled_cell_char').html(getRealLetter(arrangeList[listIndex]['word'][i]));
+                    ySpot++;
+                }
+                nextAcross = true;
+            }
+            arrangeList.splice(listIndex, 1);
+
+            wordsAdded++;
+            if (wordsAdded == 2) {
+                triedRemoving = [];
+            }
+
+            if (wordsAdded >= 2) {
+                triedTopLeft = 0;
+                triedTopRight = 0;
+                triedBottomLeft = 0;
+                triedBottomRight = 0;
+            }
+        }
+
+        nextAcross = true;
+
+        //put the first word if it's a blank grid
+        if (!isNaN(runningStringList[0])) {
+            if (puzzleDimension - arrangeList[0]['word'].length < 0) {
+                //should be always
+                if (puzzleDimension < 25) {
+                    changeGridSize(25, 0);
+                }
+            }
+
+            x = Math.floor((puzzleDimension - arrangeList[0]['word'].length) / 2) + 1;
+            y = 1 + Math.floor(puzzleDimension / 2);
+            addWord(0, 1, x, y);
+
+            nextAcross = false;
+        }
+
+        function testFit(testWord, acrossFlg, xSpot, ySpot) {
+            if (acrossFlg == 1) {
+                //check for a letter before the first of this word
+                if (xSpot != 1) {
+                    if (puzzleArray[xSpot - 1][ySpot] != 0) {
+                        return false;
+                    }
+                }
+
+                //check for a letter after the last of this word
+                if (xSpot + testWord.length <= puzzleDimension) {
+                    if (puzzleArray[xSpot + testWord.length][ySpot] != 0) {
+                        return false;
+                    }
+                }
+
+                intersectionFlg = 0;
+                //check each letter
+                for (i = 0; i < testWord.length; i++) {
+                    if (puzzleArray[xSpot][ySpot] != 0) {
+                        if (puzzleArray[xSpot][ySpot] == testWord[i]) {
+                            intersectionFlg = 1;
+                            if (xSpot + 1 <= puzzleDimension) {
+                                if (puzzleArray[xSpot + 1][ySpot] != 0) {
+                                    //overlaps an existing word, e.g. STRING and SUPERSTRING
+                                    return false;
+                                }
+                            }
+                        } else {
+                            //mismatched letter
+                            return false;
+                        }
+                    } else {
+                        if (ySpot > 1) {
+                            if (puzzleArray[xSpot][ySpot - 1] != 0) {
+                                //letter above, creates bad word
+                                return false;
+                            }
+                        }
+
+                        if (ySpot < puzzleDimension) {
+                            if (puzzleArray[xSpot][ySpot + 1] != 0) {
+                                //letter below, creates bad word
+                                return false;
+                            }
+                        }
+                    }
+
+                    xSpot++;
+                }
+
+                if (intersectionFlg == 1) {
+                    return true;
+                } else {
+                    //does not intersect another word on the grid
+                    return false;
+                }
+
+            } else {
+                //check for a letter before the first of this word
+                if (ySpot != 1) {
+                    if (puzzleArray[xSpot][ySpot - 1] != 0) {
+                        return false;
+                    }
+                }
+
+                //check for a letter after the last of this word
+                if (ySpot + testWord.length <= puzzleDimension) {
+                    if (puzzleArray[xSpot][ySpot + testWord.length] != 0) {
+                        return false;
+                    }
+                }
+
+                intersectionFlg = 0;
+                //check each letter
+                for (i = 0; i < testWord.length; i++) {
+                    if (puzzleArray[xSpot][ySpot] != 0) {
+                        if (puzzleArray[xSpot][ySpot] == testWord[i]) {
+                            intersectionFlg = 1;
+                            if (ySpot + 1 <= puzzleDimension) {
+                                if (puzzleArray[xSpot][ySpot + 1] != 0) {
+                                    //overlaps an existing word, e.g. STRING and SUPERSTRING
+                                    return false;
+                                }
+                            }
+                        } else {
+                            //mismatched letter
+                            return false;
+                        }
+                    } else {
+                        if (xSpot > 1) {
+                            if (puzzleArray[xSpot - 1][ySpot] != 0) {
+                                //letter to the left, creates bad word
+                                return false;
+                            }
+                        }
+
+                        if (xSpot < puzzleDimension) {
+                            if (puzzleArray[xSpot + 1][ySpot] != 0) {
+                                //letter to the right, creates bad word
+                                return false;
+                            }
+                        }
+                    }
+
+                    ySpot++;
+                }
+
+                if (intersectionFlg == 1) {
+                    return true;
+                } else {
+                    //no intersection with existing grid
+                    return false;
+                }
+            }
+        }
+
+        function searchAndDestroy() {
+            /*needs to find an unaffiliated word, remove, and add to a list
+            If a second word is added, wipe the list
+            If the word is on the list, don't remove it because it's been tried already
+            Ensure it doesn't destroy the only word
+            */
+
+            //this function needs to return a yes/no flag, direction, and the location of the letter not to remove
+            function testRemovableSpot(xSpot, ySpot) {
+                //this function needs to return a yes/no flag and the location of the letter not to remove
+                function checkAcrossWordRemovable() {
+                    if (xSpot != 1) {
+                        if (puzzleArray[xSpot - 1][ySpot] != 0) {
+                            return [0, '', [0, 0]];
+                        }
+                    }
+
+                    endLoop = 0;
+                    xLoc = xSpot;
+                    hasIntersection = 0;
+                    theIntersection = [0, 0];
+                    multipleLetters = 0;
+                    theWord = '';
+                    while (endLoop == 0) {
+                        isIntersection = 0;
+                        justMarked = 0;
+                        if (ySpot != 1) {
+                            if (puzzleArray[xLoc][ySpot - 1] != 0) {
+                                if (hasIntersection == 1) {
+                                    return [0, '', [0, 0]];
+                                }
+                                hasIntersection = 1;
+                                theIntersection = [xLoc, ySpot];
+                                justMarked = 1;
+                            }
+                        }
+
+                        if (ySpot != puzzleDimension) {
+                            if (puzzleArray[xLoc][ySpot + 1] != 0) {
+                                if (hasIntersection == 1 && justMarked == 0) {
+                                    return [0, '', [0, 0]];
+                                }
+                                hasIntersection = 1;
+                                theIntersection = [xLoc, ySpot];
+                            }
+                        }
+
+                        theWord = theWord + puzzleArray[xLoc][ySpot];
+                        if (xLoc < puzzleDimension) {
+                            if (puzzleArray[xLoc + 1][ySpot] != 0) {
+                                xLoc++;
+                                multipleLetters = 1;
+                                endLoop = 0;
+                            } else {
+                                endLoop = 1;
+                            }
+                        } else {
+                            endLoop = 1;
+                        }
+                    }
+
+                    if (multipleLetters == 1 && hasIntersection == 1) {
+                        //need to check theWord against array of forbidden words to remove
+                        if (triedRemoving != []) {
+                            for (z in triedRemoving) {
+                                if (theWord == triedRemoving[z]) {
+                                    return [0, '', [0, 0]];
+                                }
+                            }
+                        }
+                        return [1, theWord, theIntersection];
+                    } else {
+                        return [0, '', [0, 0]];
+                    }
+
+
+                }
+
+                function checkDownWordRemovable() {
+                    if (ySpot != 1) {
+                        if (puzzleArray[xSpot][ySpot - 1] != 0) {
+                            return [0, '', [0, 0]];
+                        }
+                    }
+
+                    endLoop = 0;
+                    yLoc = ySpot;
+                    hasIntersection = 0;
+                    theIntersection = [0, 0];
+                    multipleLetters = 0;
+                    theWord = '';
+                    while (endLoop == 0) {
+                        isIntersection = 0;
+                        justMarked = 0;
+                        if (xSpot != 1) {
+                            if (puzzleArray[xSpot - 1][yLoc] != 0) {
+                                if (hasIntersection == 1) {
+                                    return [0, '', [0, 0]];
+                                }
+                                hasIntersection = 1;
+                                theIntersection = [xSpot, yLoc];
+                                justMarked = 1;
+                            }
+                        }
+
+                        if (xSpot != puzzleDimension) {
+                            if (puzzleArray[xSpot + 1][yLoc] != 0) {
+                                if (hasIntersection == 1 && justMarked == 0) {
+                                    return [0, '', [0, 0]];
+                                }
+                                hasIntersection = 1;
+                                theIntersection = [xSpot, yLoc];
+                            }
+                        }
+
+                        theWord = theWord + puzzleArray[xSpot][yLoc];
+                        if (yLoc < puzzleDimension) {
+                            if (puzzleArray[xSpot][yLoc + 1] != 0) {
+                                yLoc++;
+                                multipleLetters = 1;
+                                endLoop = 0;
+                            } else {
+                                endLoop = 1;
+                            }
+                        } else {
+                            endLoop = 1;
+                        }
+                    }
+
+                    if (multipleLetters == 1 && hasIntersection == 1) {
+                        //need to check theWord against array of forbidden words to remove
+                        if (triedRemoving != []) {
+                            for (z in triedRemoving) {
+                                if (theWord == triedRemoving[z]) {
+                                    return [0, '', [0, 0]];
+                                }
+                            }
+                        }
+                        return [1, theWord, theIntersection];
+                    } else {
+                        return [0, '', [0, 0]];
+                    }
+
+                }
+
+                if (puzzleArray[xSpot][ySpot] != 0) {
+                    removableVar = checkAcrossWordRemovable();
+                    if (removableVar[0] == 1) {
+                        return [1, 1, removableVar];
+                    } else {
+                        removableVar = checkDownWordRemovable();
+                        if (removableVar[0] == 1) {
+                            return [1, 0, removableVar];
+                        } else {
+                            return [0, 0, [0, '', [0, 0]]];
+                        }
+                    }
+                } else {
+                    return [0, 0, [0, '', [0, 0]]];
+                }
+
+            }
+
+
+            loopX:
+                for (x = 1; x <= puzzleDimension; x++) {
+                    loopY: for (y = 1; y <= puzzleDimension; y++) {
+                        startVal = testRemovableSpot(x, y);
+                        //if testRemovableSpot says it can be removed, remove the word (except the letter returned as unremovable) and the clue, put the word and clue back in the array to arrange, and store the word in a list of words that can't be removed again once added, that would be wiped if a subsequent word is added
+                        if (startVal[0] == 1) {
+                            var lineItem = {};
+                            lineItem['word'] = startVal[2][1];
+                            triedRemoving.push(startVal[2][1]);
+
+
+                            if (startVal[1] == 1) {
+                                lineItem['clue'] = $('#clue_text_across' + x + '-' + y).val();
+                                $('#clue_text_across' + x + '-' + y).val('');
+
+                                curX = x;
+                                endLoop = 0;
+                                while (endLoop == 0) {
+                                    if (curX == startVal[2][2][0]) {} else {
+                                        puzzleArray[curX][y] = '0';
+                                        $('#cell_char' + curX + '-' + y).html('');
+                                        $('#cell_char' + curX + '-' + y).removeClass('filled_cell_char');
+                                    }
+
+                                    if (curX == puzzleDimension) {
+                                        endLoop = 1;
+                                    } else {
+                                        if (puzzleArray[curX + 1][y] == '0') {
+                                            endLoop = 1;
+                                        } else {
+                                            curX++;
+                                        }
+                                    }
+
+                                }
+                            } else {
+                                lineItem['clue'] = $('#clue_text_down' + x + '-' + y).val();
+                                $('#clue_text_down' + x + '-' + y).val('');
+
+                                curY = y;
+                                endLoop = 0;
+                                while (endLoop == 0) {
+                                    if (curY == startVal[2][2][1]) {} else {
+                                        puzzleArray[x][curY] = '0';
+                                        $('#cell_char' + x + '-' + curY).html('');
+                                        $('#cell_char' + x + '-' + curY).removeClass('filled_cell_char');
+                                    }
+
+                                    if (curY == puzzleDimension) {
+                                        endLoop = 1;
+                                    } else {
+                                        if (puzzleArray[x][curY + 1] == '0') {
+                                            endLoop = 1;
+                                        } else {
+                                            curY++;
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            lineItem['orig_index'] = arrangeList.length;
+                            arrangeList.push(lineItem);
+
+                            //resets the counter of words added since a word destroyed, to reset the do-not-remove list once two words are added after this one
+                            wordsAdded = 0;
+
+                            //tells the main arrange function that something was removed
+                            return 1;
+                        }
+                    }
+                }
+
+            //tells the main arrange function that nothing was removed
+            return 0;
+
+        }
+
+        var triedTopLeft = 0;
+        var triedTopRight = 0;
+        var triedBottomLeft = 0;
+        var triedBottomRight = 0;
+
+        needsToStop = false;
+
+        var triedRemoving = [];
+        var wordsAdded = 0;
+
+        jQuery.whileAsync({
+            delay: 100,
+            bulk: 0,
+            test: function () {
+                return arrangeList.length > 0 && !(needsToStop)
+            },
+            loop: function () {
+                needsToStop = true;
+                //for each item in the list, try to put it in. If successful, set needsToStop to false, break, and start again at the top, switching attempt directions
+                loop1:
+                    for (j = 0; j < arrangeList.length; j++) {
+                        if (nextAcross) {
+                            loop2: for (x = 1; x <= puzzleDimension - arrangeList[j]['word'].length + 1; x++) {
+                                loop3: for (y = 1; y <= puzzleDimension; y++) {
+                                    if (testFit(arrangeList[j]['word'], 1, x, y)) {
+                                        addWord(j, 1, x, y);
+                                        needsToStop = false;
+                                        break loop1;
+                                    }
+                                }
+                            }
+
+                            loop2: for (x = 1; x <= puzzleDimension; x++) {
+                                loop3: for (y = 1; y <= puzzleDimension - arrangeList[j]['word'].length + 1; y++) {
+                                    if (testFit(arrangeList[j]['word'], 0, x, y)) {
+                                        addWord(j, 0, x, y);
+                                        needsToStop = false;
+                                        break loop1;
+                                    }
+                                }
+                            }
+                        }
+                        else {
+
+                            loop2: for (x = 1; x <= puzzleDimension; x++) {
+                                loop3: for (y = 1; y <= puzzleDimension - arrangeList[j]['word'].length + 1; y++) {
+                                    if (testFit(arrangeList[j]['word'], 0, x, y)) {
+                                        addWord(j, 0, x, y);
+                                        needsToStop = false;
+                                        break loop1;
+                                    }
+                                }
+                            }
+
+                            loop2: for (x = 1; x <= puzzleDimension - arrangeList[j]['word'].length + 1; x++) {
+                                loop3: for (y = 1; y <= puzzleDimension; y++) {
+                                    if (testFit(arrangeList[j]['word'], 1, x, y)) {
+                                        addWord(j, 1, x, y);
+                                        needsToStop = false;
+                                        break loop1;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                if (needsToStop && arrangeList.length > 0 && puzzleDimension < 25) {
+                    //needed to show/hide appropriate clues before moving
+                    setNumbers();
+                    changeGridSize(25, 0);
+                    needsToStop = false;
+                } else if ((triedTopLeft + triedTopRight + triedBottomLeft + triedBottomRight < 4) && needsToStop && arrangeList.length > 0) {
+                    endDelay = 1;
+                    if (triedTopLeft == 0) {
+                        moveText('top-left', 'automatic', 0);
+                        triedTopLeft = 1;
+                        needsToStop = false;
+                    } else {
+                        if (triedBottomRight == 0) {
+                            moveText('bottom-right', 'automatic', 0);
+                            triedBottomRight = 1;
+                            needsToStop = false;
+                        } else {
+                            if (triedBottomLeft == 0) {
+                                moveText('bottom-left', 'automatic', 0);
+                                triedBottomLeft = 1;
+                                needsToStop = false;
+                            } else {
+                                moveText('top-right', 'automatic', 0);
+                                triedTopRight = 1;
+                                needsToStop = false;
+                            }
+                        }
+                    }
+                } else if (needsToStop && arrangeList.length > 0 && (new Date().getTime() - nowTime) / 1000 < Math.min(50, arrangeWordCount * 1.5)) {
+                    moveText('center', 'automatic', 0);
+                    destroyedVar = searchAndDestroy();
+                    if (destroyedVar == 1) {
+                        needsToStop = false;
+                    }
+                }
+            },
+            end: function () {
+                clearAutoArrangeList();
+
+                wordsRemaining = arrangeList.length;
+
+                //resets the delay for a subsequent arranging
+                endDelay = 0;
+
+                if (wordsRemaining > 0) {
+
+                    if (wordsRemaining == 1 && arrangeWordCount == 1) {
+                        $('#answer_word1').val(arrangeList[0]['word']);
+                        $('#answer_clue1').val(arrangeList[0]['clue']);
+                        alert('Your word does not intersect with your current grid.  You can try adding additional words to the auto-arrange list to give your word a better chance of intersecting, or you can click on your grid and type directly into it, pressing spacebar to switch between across and down.');
+                    } else {
+                        if (parseFloat(wordsRemaining) / parseFloat(arrangeWordCount) <= 0.25) {
+                            //scratchpad group
+
+                            for (i = arrangeList.length - 1; i >= 0; i--) {
+                                $('#scratchpad').val(arrangeList[i]['word'] + ' - ' + arrangeList[i]['clue'] + '\n' + $('#scratchpad').val());
+                            }
+
+                            saveScratchpad($('#scratchpad'));
+
+                            if (wordsRemaining + wordsTooLong == 1) {
+                                shortVerb = 'was';
+                            } else {
+                                shortVerb = 'were';
+                            }
+
+                            alert(numToWord(wordsRemaining + wordsTooLong) + " of your words did not intersect with your grid and " + shortVerb + " added to the scratchpad.");
+                        } else {
+                            //auto-arrange list group
+                            for (i = 1; i <= arrangeList.length; i++) {
+                                $('#answer_word' + i).val(arrangeList[i - 1]['word']);
+                                $('#answer_clue' + i).val(arrangeList[i - 1]['clue']);
+                            }
+
+                            alert(numToWord(wordsRemaining) + " of your words did not intersect with your grid.");
+
+                            if (scratchpadEdited == 1) {
+                                $('#scratchpad').val('Too Long:\n' + $('#scratchpad').val());
+                            }
+
+                        }
+                        //END REMAINING WORD MOVING AND ALERT
+                    }
+                } else {
+                    if (scratchpadEdited == 1) {
+                        saveScratchpad($('#scratchpad'));
+                        if (wordsTooLong == 1) {
+                            shortVerb = 'was';
+                        } else {
+                            shortVerb = 'were';
+                        }
+                        alert(numToWord(wordsTooLong) + " of your words " + shortVerb + " too long and " + shortVerb + " added to the scratchpad.");
+                    }
+                }
+
+                endTime = new Date().getTime();
+
+                arrangeDuration = Math.round((endTime - nowTime) / 100) / 10;
+
+                if(!adminViewer) {
+                    (async () => {
+                        try {
+                            await request.form('/record_auto_arrange_event', {
+                                words_attempted: arrangeWordCount,
+                                words_too_long: wordsTooLong,
+                                words_remaining: wordsRemaining,
+                                arrange_duration: arrangeDuration
+                            }, {
+                                method: 'POST',
+                                responseType: 'text'
+                            });
+                        } catch (error) {
+                            console.error('Error in autoArrange:', error);
+                            if (typeof logErrors === 'function') {
+                                logErrors(createRequestError(error, 'autoArrange - record_auto_arrange_event'), {
+                                    file: 'simple-puzzle.js',
+                                    custom_function: 'autoArrange'
+                                });
+                            }
+                        }
+                    })();
+                }
+
+
+                //needed to show/hide appropriate clues before moving
+                setNumbers();
+
+                //centers and saves at end, even if the centering does nothing
+                changeGridSize(Math.max(origDimension, getTextDimension()), 1);
+                aaListSave();
+
+                $.unblockUI();
+            }
+        });
+
+
+    }
+
+}
+
+function unArrange() {
+    //need to loop through (similar to finding numbers - may just use visible clue boxes to save time, and paste word-finding logic of searchAndDestroy)
+    //once words and clues added to array, sort by word A-Z and add to list, add any that don't fit to scratchpad
+    autoArranged = false;
+    unArranged = true;
+    wordList = [];
+    $('.clue_text').filter(':visible').each(function () {
+        clueAnswerPair = [];
+        clueAnswerPair[1] = this.value;
+        startX = parseInt(this.getAttribute('data-x'));
+        startY = parseInt(this.getAttribute('data-y'));
+        if (this.id.substr(10, 6) == 'across') {
+            endLoop = 0;
+            xLoc = startX;
+            theWord = '';
+            while (endLoop == 0) {
+                theWord = theWord + puzzleArray[xLoc][startY];
+                if (xLoc < puzzleDimension) {
+                    if (puzzleArray[xLoc + 1][startY] != 0) {
+                        xLoc++;
+                        endLoop = 0;
+                    } else {
+                        endLoop = 1;
+                    }
+                } else {
+                    endLoop = 1;
+                }
+            }
+        } else {
+            endLoop = 0;
+            yLoc = startY;
+            theWord = '';
+            while (endLoop == 0) {
+                theWord = theWord + puzzleArray[startX][yLoc];
+                if (yLoc < puzzleDimension) {
+                    if (puzzleArray[startX][yLoc + 1] != 0) {
+                        yLoc++;
+                        endLoop = 0;
+                    } else {
+                        endLoop = 1;
+                    }
+                } else {
+                    endLoop = 1;
+                }
+            }
+        }
+        clueAnswerPair[0] = getMaskWord(theWord);
+        wordList.push(clueAnswerPair);
+    });
+
+    if (wordList.length == 0) {
+        alert("This button will pull all your words and clues from your grid back to your Auto-Arrange list, letting you edit them.  You will then be able to press the Arrange button again to rearrange your words.");
+    } else {
+
+        function wordListSort(a, b) {
+            if (a[0] < b[0]) {
+                return -1;
+            } else if (a[0] > b[0]) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        wordList.sort(wordListSort);
+
+        var j = 1;
+
+
+        loop1:
+            for (i = 0; i < wordList.length; i++) {
+                wordAdded = 0;
+
+                loop2:
+                    while (wordAdded == 0) {
+                        wordSpot = document.getElementById('answer_word' + j);
+                        clueSpot = document.getElementById('answer_clue' + j);
+                        if (wordSpot.value == '' && clueSpot.value == '') {
+                            wordSpot.value = wordList[i][0];
+                            clueSpot.value = wordList[i][1];
+                            wordAdded = 1;
+                        }
+
+                        j++;
+                        //if no more room on auto-arrange list, check if more words and if so add to scratchpad and throw an alert
+                        if (j == 51 && i + wordAdded < wordList.length) {
+                            i = i + wordAdded;
+                            var numRemaining = wordList.length - i;
+                            var scratchpadText = document.getElementById('scratchpad').value;
+                            var scratchpadWords = '';
+                            while (i < wordList.length) {
+                                scratchpadWords = scratchpadWords + wordList[i][0] + ' - ' + wordList[i][1] + '\n';
+                                i++;
+                            }
+                            document.getElementById('scratchpad').value = 'More words:\n' + scratchpadWords + scratchpadText;
+                            saveScratchpad($('#scratchpad'));
+                            if (numRemaining == 1) {
+                                shortVerb = 'was';
+                            } else {
+                                shortVerb = 'were';
+                            }
+                            alert(numToWord(numRemaining) + ' of your words did not fit on the Auto-Arrange list and ' + shortVerb + ' added to your scratchpad.');
+
+                            break loop1;
+                        }
+                    }
+            }
+
+        $('.answer_clue').trigger('autosize.resize');
+
+        //this will wipe the grid and save it
+        eraseAll();
+        aaListSave();
+    }
+}
+
+function numToWord(inputNum) {
+    switch (inputNum) {
+        case 0:
+            return "None";
+            break;
+        case 1:
+            return "One";
+            break;
+        case 2:
+            return "Two";
+            break;
+        case 3:
+            return "Three";
+            break;
+        case 4:
+        case 5:
+        case 6:
+            return "Some";
+            break;
+        default:
+            return "A number";
+    }
+}
+
+function getTextDimension() {
+    var minX = 100;
+    var minY = 100;
+    var maxX = -100;
+    var maxY = -100;
+
+    for (y = 1; y <= puzzleDimension; y++) {
+        for (x = 1; x <= puzzleDimension; x++) {
+            if (puzzleArray[x][y] != 0) {
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            }
+        }
+    }
+
+    if (minX == 100) {
+        return 0;
+    } else {
+        return Math.max(maxX - minX + 1, maxY - minY + 1);
+    }
+
+}
+
+function setChangeGridSizeDropdown() {
+    $("#change_grid_size_dropdown option").not(":selected").remove();
+    absoluteMin = Math.max(5, getTextDimension());
+
+    for (i = puzzleDimension - 1; i >= absoluteMin; i--) {
+        $('#change_grid_size_dropdown')
+            .prepend($("<option></option>")
+                .attr("value", i)
+                .text(i + "x" + i));
+    }
+
+    for (i = puzzleDimension + 1; i <= 25; i++) {
+        $('#change_grid_size_dropdown')
+            .append($("<option></option>")
+                .attr("value", i)
+                .text(i + "x" + i));
+    }
+}
+
+function triggerChangeGridSize() {
+    var changeGridDropdown = document.getElementById("change_grid_size_dropdown");
+    var desiredSize = changeGridDropdown.options[changeGridDropdown.selectedIndex].value;
+    changeGridSize(desiredSize, 1);
+}
+
+function changeGridToMin(triggerType) {
+    desiredSize = Math.max(5, getTextDimension());
+
+    if (desiredSize == puzzleDimension) {
+        if (triggerType == 'manual') {
+            if (puzzleDimension == 5) {
+                alert("A 5x5 grid is the smallest you can have!");
+            } else {
+                alert("Your grid cannot be made smaller without deleting some of your letters.");
+            }
+        } else {
+            //for automatic grid tightening at the end of autoArrange() and when publishing
+            undoSpot = 0;
+            runningStringList = [];
+            recordString();
+            wholesaleSave();
+        }
+    } else {
+        changeGridSize(desiredSize, 1);
+    }
+}
+
+function changeGridToMax(triggerType) {
+    if (25 == puzzleDimension) {
+        //for automatic grid tightening in autoArrange(), no action needed
+        if (triggerType == 'manual') {
+            alert("You currently have a 25x25 grid, which is the largest you can have.  Larger grids would not fit on a single page.");
+        }
+    } else {
+        if (triggerType == 'manual') {
+            changeGridSize(25, 1);
+        } else {
+            //save only at the end for autoArrange()
+            changeGridSize(25, 0);
+        }
+
+    }
+}
+
+function changeGridSize(desiredSize, saveAtEnd) {
+    if (desiredSize < puzzleDimension) {
+        moveText('top-left', 'automatic', 0);
+        //delete rows, columns, clue spots, puzzleArray data
+        for (i = puzzleDimension; i > desiredSize; i--) {
+            //delete grid row
+            $('#puzzle_row' + i).remove();
+            //delete clue spots
+            $(".clue_holder[data-y='" + i + "']").remove();
+
+            //delete grid column
+            $(".puzzle_cell[data-x='" + i + "']").remove();
+            //delete clue spots
+            $(".clue_holder[data-x='" + i + "']").remove();
+
+            puzzleArray.pop();
+            for (j = 1; j < i; j++) {
+                puzzleArray[j].pop();
+            }
+        }
+    } else {
+        //create rows, columns, clue spots, puzzleArray data, set onclick actions, insert clue divs in the right place (use .after() and/or .before())
+        for (i = puzzleDimension + 1; i <= desiredSize; i++) {
+            //need to rewrite initializeGrid as more modular functions, then leverage them.  Yuck.
+            var puzzleGrid = document.getElementById("puzzle_grid");
+
+            var acrossClues = document.getElementById("across_clues");
+            var downClues = document.getElementById("down_clues");
+
+            puzzleArray[i] = [];
+
+            for (y = 1; y < i; y++) {
+                var pCell = document.createElement("td");
+                pCell.setAttribute("id", "puzzle_cell" + i + "-" + y);
+                pCell.setAttribute("class", "puzzle_cell");
+                pCell.setAttribute("data-x", i);
+                pCell.setAttribute("data-y", y);
+                var numDiv = document.createElement("div");
+                numDiv.setAttribute("id", "cell_number" + i + "-" + y);
+                numDiv.setAttribute("class", "cell_number");
+                numDiv.setAttribute("data-x", i);
+                numDiv.setAttribute("data-y", y);
+                var charDiv = document.createElement("div");
+                charDiv.setAttribute("id", "cell_char" + i + "-" + y);
+                charDiv.setAttribute("class", "cell_char");
+                charDiv.setAttribute("data-x", i);
+                charDiv.setAttribute("data-y", y);
+
+                if (navigator.userAgent.match(/(iPod|iPhone|iPad|android)/i)) {
+                    charDiv.setAttribute("contenteditable", true);
+                }
+
+                $(pCell).on('click', function () {
+                    if (activeCell != this) {
+                        if (activeCell) {
+                            $(activeCell).removeClass('active_cell');
+                        }
+
+                        $(this).addClass('active_cell');
+                        activeCell = this;
+                        $(this).prepend($('#dir_pointer_holder'));
+
+                    } else {
+                        if (acrossBinary == true) {
+                            acrossBinary = false;
+                            $("#dir_pointer").rotate({
+                                animateTo: 90,
+                                duration: 200
+                            });
+                        } else {
+                            acrossBinary = true;
+                            $("#dir_pointer").rotate({
+                                animateTo: 0,
+                                duration: 200
+                            });
+                        }
+
+                    }
+                    setSubActive();
+                });
+
+                puzzleArray[i][y] = 0;
+
+                pCell.appendChild(numDiv);
+                pCell.appendChild(charDiv);
+                document.getElementById('puzzle_row' + y).appendChild(pCell);
+                //create clue holders
+                var cHolderAcross = document.createElement("div");
+                cHolderAcross.setAttribute("id", "clue_holder_across" + i + "-" + y);
+                cHolderAcross.setAttribute("class", "clue_holder");
+                cHolderAcross.setAttribute("data-x", i);
+                cHolderAcross.setAttribute("data-y", y);
+                var cNumberAcross = document.createElement("div");
+                cNumberAcross.setAttribute("id", "clue_number_across" + i + "-" + y);
+                cNumberAcross.setAttribute("class", "clue_number");
+                cNumberAcross.setAttribute("data-x", i);
+                cNumberAcross.setAttribute("data-y", y);
+                var cTextAcross = document.createElement("textarea");
+                cTextAcross.setAttribute("id", "clue_text_across" + i + "-" + y);
+                cTextAcross.setAttribute("class", "clue_text");
+                $(cTextAcross).on('keydown', function (event) {
+                    if (this.selectionStart == 0 && event.keyCode >= 189 && event.keyCode >= 65 && event.keyCode <= 90 && !(event.shiftKey) && !(event.ctrlKey) && !(event.metaKey) && !(event.altKey)) {
+                        var $t = $(this);
+                        event.preventDefault();
+
+                        if(event.KeyCode)
+                        var char = String.fromCharCode(event.keyCode);
+                        $t.val(char + $t.val().slice(this.selectionEnd));
+                        this.setSelectionRange(1, 1);
+                    }
+                });
+                cTextAcross.setAttribute("data-x", i);
+                cTextAcross.setAttribute("data-y", y);
+                cHolderAcross.appendChild(cNumberAcross);
+                cHolderAcross.appendChild(cTextAcross);
+                $('#clue_holder_across' + (i - 1) + '-' + y).after(cHolderAcross);
+
+                var cHolderDown = document.createElement("div");
+                cHolderDown.setAttribute("id", "clue_holder_down" + i + "-" + y);
+                cHolderDown.setAttribute("class", "clue_holder");
+                cHolderDown.setAttribute("data-x", i);
+                cHolderDown.setAttribute("data-y", y);
+                var cNumberDown = document.createElement("div");
+                cNumberDown.setAttribute("id", "clue_number_down" + i + "-" + y);
+                cNumberDown.setAttribute("class", "clue_number");
+                cNumberDown.setAttribute("data-x", i);
+                cNumberDown.setAttribute("data-y", y);
+                var cTextDown = document.createElement("textarea");
+                cTextDown.setAttribute("id", "clue_text_down" + i + "-" + y);
+                cTextDown.setAttribute("class", "clue_text");
+                $(cTextDown).on('keydown', function (event) {
+                    if (this.selectionStart == 0 && event.keyCode >= 65 && event.keyCode <= 90 && !(event.shiftKey) && !(event.ctrlKey) && !(event.metaKey) && !(event.altKey)) {
+                        var $t = $(this);
+                        event.preventDefault();
+                        var char = String.fromCharCode(event.keyCode);
+                        $t.val(char + $t.val().slice(this.selectionEnd));
+                        this.setSelectionRange(1, 1);
+                    }
+                });
+                cTextDown.setAttribute("data-x", i);
+                cTextDown.setAttribute("data-y", y);
+                cHolderDown.appendChild(cNumberDown);
+                cHolderDown.appendChild(cTextDown);
+                $('#clue_holder_down' + (i - 1) + '-' + y).after(cHolderDown);
+                //since clueValues isn't organized, faster to parse it once into clueArray and add to clues instead of checking for each clue whether it exists
+            }
+
+
+            //add new row
+            var pRow = document.createElement("tr");
+            pRow.setAttribute("id", "puzzle_row" + i);
+            pRow.setAttribute("class", "puzzle_row");
+            for (x = 1; x <= i; x++) {
+                var pCell = document.createElement("td");
+                pCell.setAttribute("id", "puzzle_cell" + x + "-" + i);
+                pCell.setAttribute("class", "puzzle_cell");
+                pCell.setAttribute("data-x", x);
+                pCell.setAttribute("data-y", i);
+                var numDiv = document.createElement("div");
+                numDiv.setAttribute("id", "cell_number" + x + "-" + i);
+                numDiv.setAttribute("class", "cell_number");
+                numDiv.setAttribute("data-x", x);
+                numDiv.setAttribute("data-y", i);
+                var charDiv = document.createElement("div");
+                charDiv.setAttribute("id", "cell_char" + x + "-" + i);
+                charDiv.setAttribute("class", "cell_char");
+                charDiv.setAttribute("data-x", x);
+                charDiv.setAttribute("data-y", i);
+
+                if (navigator.userAgent.match(/(iPod|iPhone|iPad|android)/i)) {
+                    charDiv.setAttribute("contenteditable", true);
+                }
+
+                $(pCell).on('click', function () {
+                    if (activeCell != this) {
+                        if (activeCell) {
+                            $(activeCell).removeClass('active_cell');
+                        }
+
+                        $(this).addClass('active_cell');
+                        activeCell = this;
+                        $(this).prepend($('#dir_pointer_holder'));
+
+                    } else {
+                        if (acrossBinary == true) {
+                            acrossBinary = false;
+                            $("#dir_pointer").rotate({
+                                animateTo: 90,
+                                duration: 200
+                            });
+                        } else {
+                            acrossBinary = true;
+                            $("#dir_pointer").rotate({
+                                animateTo: 0,
+                                duration: 200
+                            });
+                        }
+
+                    }
+                    setSubActive();
+                });
+
+                puzzleArray[x][i] = 0;
+
+                pCell.appendChild(numDiv);
+                pCell.appendChild(charDiv);
+                pRow.appendChild(pCell);
+
+
+                //create clue holders
+                var cHolderAcross = document.createElement("div");
+                cHolderAcross.setAttribute("id", "clue_holder_across" + x + "-" + i);
+                cHolderAcross.setAttribute("class", "clue_holder");
+                cHolderAcross.setAttribute("data-x", x);
+                cHolderAcross.setAttribute("data-y", i);
+                var cNumberAcross = document.createElement("div");
+                cNumberAcross.setAttribute("id", "clue_number_across" + x + "-" + i);
+                cNumberAcross.setAttribute("class", "clue_number");
+                cNumberAcross.setAttribute("data-x", x);
+                cNumberAcross.setAttribute("data-y", i);
+                var cTextAcross = document.createElement("textarea");
+                cTextAcross.setAttribute("id", "clue_text_across" + x + "-" + i);
+                cTextAcross.setAttribute("class", "clue_text");
+                $(cTextAcross).on('keydown', function (event) {
+                    if (this.selectionStart == 0 && event.keyCode >= 65 && event.keyCode <= 90 && !(event.shiftKey) && !(event.ctrlKey) && !(event.metaKey) && !(event.altKey)) {
+                        var $t = $(this);
+                        event.preventDefault();
+                        var char = String.fromCharCode(event.keyCode);
+                        $t.val(char + $t.val().slice(this.selectionEnd));
+                        this.setSelectionRange(1, 1);
+                    }
+                });
+                cTextAcross.setAttribute("data-x", x);
+                cTextAcross.setAttribute("data-y", i);
+                cHolderAcross.appendChild(cNumberAcross);
+                cHolderAcross.appendChild(cTextAcross);
+                acrossClues.appendChild(cHolderAcross);
+
+                var cHolderDown = document.createElement("div");
+                cHolderDown.setAttribute("id", "clue_holder_down" + x + "-" + i);
+                cHolderDown.setAttribute("class", "clue_holder");
+                cHolderDown.setAttribute("data-x", x);
+                cHolderDown.setAttribute("data-y", i);
+                var cNumberDown = document.createElement("div");
+                cNumberDown.setAttribute("id", "clue_number_down" + x + "-" + i);
+                cNumberDown.setAttribute("class", "clue_number");
+                cNumberDown.setAttribute("data-x", x);
+                cNumberDown.setAttribute("data-y", i);
+                var cTextDown = document.createElement("textarea");
+                cTextDown.setAttribute("id", "clue_text_down" + x + "-" + i);
+                cTextDown.setAttribute("class", "clue_text");
+                $(cTextDown).on('keydown', function (event) {
+                    if (this.selectionStart == 0 && event.keyCode >= 65 && event.keyCode <= 90 && !(event.shiftKey) && !(event.ctrlKey) && !(event.metaKey) && !(event.altKey)) {
+                        var $t = $(this);
+                        event.preventDefault();
+                        var char = String.fromCharCode(event.keyCode);
+                        $t.val(char + $t.val().slice(this.selectionEnd));
+                        this.setSelectionRange(1, 1);
+                    }
+                });
+                cTextDown.setAttribute("data-x", x);
+                cTextDown.setAttribute("data-y", i);
+                cHolderDown.appendChild(cNumberDown);
+                cHolderDown.appendChild(cTextDown);
+                downClues.appendChild(cHolderDown);
+                //since clueValues isn't organized, faster to parse it once into clueArray and add to clues instead of checking for each clue whether it exists
+
+
+            }
+            puzzleGrid.appendChild(pRow);
+        }
+        $('.clue_text').off('focus')
+            .off('blur')
+            .off('change')
+            .on("focus", function () {
+                setClueSubActive(this)
+            })
+            .on("blur", function () {
+                setSubActive();
+                //saveClue used to be onBlur.
+            }).on('change', function () {
+                saveClue(this)
+            });
+    }
+
+
+    //set after change, before text moved
+    puzzleDimension = parseInt(desiredSize);
+
+    //sets height of clues, min-width of scroll window
+    setDimensions();
+
+    moveText('center', 'automatic', 0);
+    $('#change_grid_size_dropdown option').remove();
+
+    $('#change_grid_size_dropdown')
+        .append($("<option></option>")
+            .attr("value", puzzleDimension)
+            .text(puzzleDimension + "x" + puzzleDimension))
+        .blur();
+
+    setChangeGridSizeDropdown();
+
+    //should always trigger unless interim large grid in auto-arrange
+    if (saveAtEnd == 1) {
+        undoSpot = 0;
+        runningStringList = [];
+        recordString();
+        wholesaleSave();
+    }
+}
+
+
+function moveText(desiredSpot, triggerType, saveAtEnd) {
+    setNumbers();
+
+    var minX = 100;
+    var minY = 100;
+    var maxX = -100;
+    var maxY = -100;
+
+    for (y = 1; y <= puzzleDimension; y++) {
+        for (x = 1; x <= puzzleDimension; x++) {
+            if (puzzleArray[x][y] != 0) {
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            }
+        }
+    }
+
+    if (minX == 100) {
+        if (triggerType == 'manual') {
+            alert("This button will move words currently in your grid to a different part of your grid.  You do not currently have any words in your grid.");
+            return;
+        }
+    } else {
+        if (desiredSpot == 'top-left') {
+            xMovement = 1 - minX;
+            yMovement = 1 - minY;
+        } else if (desiredSpot == 'top-right') {
+            xMovement = puzzleDimension - maxX;
+            yMovement = 1 - minY;
+        } else if (desiredSpot == 'bottom-left') {
+            xMovement = 1 - minX;
+            yMovement = puzzleDimension - maxY;
+        } else if (desiredSpot == 'bottom-right') {
+            xMovement = puzzleDimension - maxX;
+            yMovement = puzzleDimension - maxY;
+        } else if (desiredSpot == 'center') {
+            xMovement = Math.floor((puzzleDimension - (maxX - minX + 1)) / 2) - minX + 1;
+            yMovement = Math.floor((puzzleDimension - (maxY - minY + 1)) / 2) - minY + 1;
+        }
+
+
+        if (xMovement == 0 && yMovement == 0) {
+            if (triggerType == 'manual') {
+                if ((maxX - minX + 1 == puzzleDimension) && (maxY - minY + 1 == puzzleDimension)) {
+                    if (puzzleDimension == 25) {
+                        alert("There is no room to shift the text in your grid.  You are already running the length and height of the largest grid!");
+                    } else {
+                        alert("There is no room to shift the text in your grid.  You can make your grid larger if you need more space.");
+                    }
+                } else {
+                    alertString = "Your text is already aligned in the " + desiredSpot + " of your grid";
+                    alertString = alertString.replace(/-/g, ' ');
+                    alert(alertString);
+                }
+                return;
+            }
+        } else {
+            //need to move grid + adjust puzzleArray, move clues + wipe hidden clues
+            tempPuzzleArray = cloneObj(puzzleArray);
+
+            //cloned from puzzleArray just to have an array of arrays of proper length
+            tempAcrossClueArray = cloneObj(puzzleArray);
+            tempDownClueArray = cloneObj(puzzleArray);
+            for (y = 1; y <= puzzleDimension; y++) {
+                for (x = 1; x <= puzzleDimension; x++) {
+                    fromX = x - xMovement;
+                    fromY = y - yMovement;
+                    if (fromX <= 0 || fromX > puzzleDimension || fromY <= 0 || fromY > puzzleDimension) {
+                        puzzleArray[x][y] = 0;
+                        document.getElementById('cell_char' + x + '-' + y).innerHTML = '';
+                        $('#cell_char' + x + '-' + y).removeClass('filled_cell_char');
+                        tempAcrossClueArray[x][y] = '';
+                        tempDownClueArray[x][y] = '';
+                    } else {
+                        puzzleArray[x][y] = tempPuzzleArray[fromX][fromY];
+                        if (tempPuzzleArray[fromX][fromY] == 0) {
+                            document.getElementById('cell_char' + x + '-' + y).innerHTML = '';
+                            $('#cell_char' + x + '-' + y).removeClass('filled_cell_char');
+                            tempAcrossClueArray[x][y] = '';
+                            tempDownClueArray[x][y] = '';
+                        } else {
+                            document.getElementById('cell_char' + x + '-' + y).innerHTML = getRealLetter(tempPuzzleArray[fromX][fromY]);
+                            $('#cell_char' + x + '-' + y).addClass('filled_cell_char');
+                            if ($('#clue_text_across' + fromX + '-' + fromY).is(':visible')) {
+                                tempAcrossClueArray[x][y] = $('#clue_text_across' + fromX + '-' + fromY).val();
+                            } else {
+                                tempAcrossClueArray[x][y] = '';
+                            }
+
+                            if ($('#clue_text_down' + fromX + '-' + fromY).is(':visible')) {
+                                tempDownClueArray[x][y] = $('#clue_text_down' + fromX + '-' + fromY).val();
+                            } else {
+                                tempDownClueArray[x][y] = '';
+                            }
+                        }
+                    }
+                }
+            }
+            //replace all clue text;
+            for (y = 1; y <= puzzleDimension; y++) {
+                for (x = 1; x <= puzzleDimension; x++) {
+                    $('#clue_text_across' + x + '-' + y).val(tempAcrossClueArray[x][y]);
+                    $('#clue_text_down' + x + '-' + y).val(tempDownClueArray[x][y]);
+                }
+            }
+        }
+    }
+    setNumbers();
+    //save if nothing moves on automatic, just alert on manual
+    if (saveAtEnd == 1 && !(minX == 100 && triggerType == 'manual')) {
+        undoSpot = 0;
+        runningStringList = [];
+        recordString();
+        wholesaleSave();
+    }
+}
+
+/**
+ * Persist the entire puzzle state (grid, clues, dimension, metadata).
+ * @returns {Promise<boolean>} Resolves true on success, false otherwise.
+ */
+async function wholesaleSave() {
+    if (jUserId == 0 || adminViewer) {
+        return false;
+    }
+
+    //saves grid, updates dimension, wipes clues + saves all
+
+    //get clue data to send
+    const clueList = [];
+    $('.clue_text').filter(':visible').each(function (i) {
+        clueList[i] = {};
+        const xCoord = parseInt(this.getAttribute('data-x'));
+        const yCoord = parseInt(this.getAttribute('data-y'));
+        clueList[i]['puzzle_position'] = (puzzleDimension * (yCoord - 1)) + xCoord - 1;
+        clueList[i]['across_binary'] = this.id.indexOf('across') !== -1 ? 1 : 0;
+        clueList[i]['clue_text'] = this.value;
+    });
+
+    gridEdited = 0;
+
+    let puzzleString = runningStringList[0];
+    if (puzzleString === '') {
+        runningStringList = [];
+        recordString();
+        puzzleString = runningStringList[0];
+        if (puzzleString === '') {
+            alert('An error has occurred.  Trying to recover your puzzle...');
+            recordSessionEvent('grid_lost_wholesale_save');
+            setTimeout(function () {
+                location.reload();
+            }, 1000);
+            return false;
+        }
+    }
+
+    try {
+        const response = await request.form('/wholesale_save', {
+            puzzle_id: jPuzzleId,
+            clue_array: JSON.stringify(clueList),
+            dimension: puzzleDimension,
+            puzzle_string: puzzleString
+        }, {
+            method: 'POST',
+            responseType: 'text'
+        });
+
+        if (response !== "success") {
+            if (response === "user_mismatch") {
+                alert("Error saving - you are no longer logged in");
+                location.reload();
+            } else {
+                alert("Error saving - script not responding");
+            }
+            return false;
+        }
+
+        const tempDate = new Date();
+        lastSavedOn = tempDate.toLocaleTimeString(navigator.language, {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        if (gridEdited === 0) {
+            document.getElementById('save_status_text').innerHTML = 'Saved';
+        } else {
+            document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+        }
+        needsWholesaleSave = 0;
+        return true;
+    } catch (error) {
+        console.error('Error in wholesaleSave:', error);
+        if (typeof logErrors === 'function') {
+            logErrors(createRequestError(error, 'wholesaleSave'), {
+                file: 'simple-puzzle.js',
+                custom_function: 'wholesaleSave'
+            });
+        }
+
+        if (isUnloading === 0) {
+            alert("There was an error saving your grid, likely due to a spotty internet connection.  We will try again automatically in a minute.");
+            document.getElementById('save_status_text').innerHTML = 'Last saved: ' + lastSavedOn;
+            needsWholesaleSave = 1;
+        }
+        return false;
+    }
+}
+
+function eraseAll() {
+    var theString = '';
+    for (i = 0; i < puzzleDimension * puzzleDimension; i++) {
+        theString = theString + '0';
+    }
+    setFromString(theString);
+    recordString();
+    setChangeGridSizeDropdown();
+    wholesaleSave();
+}
+
+function restartTour() {
+    if (jUserId != 0 && !adminViewer) {
+        (async () => {
+            try {
+                await request.form('/record_tour_restart', {
+                    validation: 'validation'
+                }, {
+                    method: 'POST',
+                    responseType: 'text'
+                });
+            } catch (error) {
+                console.error('Error in restartTour:', error);
+                if (typeof logErrors === 'function') {
+                    logErrors(createRequestError(error, 'restartTour'), {
+                        file: 'simple-puzzle.js',
+                        custom_function: 'restartTour'
+                    });
+                }
+            }
+        })();
+    }
+
+    tourDenominator = Object.size(createTourText);
+    $('#end_tour_holder').on('click', function () {
+        endCreateTour();
+    });
+
+    if ($('#tour_box').is(':visible')) {
+        showCreateTour(1, 0);
+    } else {
+        globalTourRestart = 1;
+        showCreateTour(1, 1);
+    }
+}
+
+function unlockClick(spot) {
+    if (jPuzzleId == 0) {
+        recordSessionEvent('top_right_button_click_not_logged_in');
+        signupButton();
+    } else {
+        recordSessionEvent('top_right_button_click_logged_in');
+        //**********************************************************************************************************************************************
+        //this is the new payment messaging and on-page payment (located in 2 places, need function after different messaging from just created account)
+        //**********************************************************************************************************************************************
+        recordSessionEvent('show_payment_overlay_logged_in');
+        showSelectPlanOverlay();
+    }
+}
+
+async function loginHandle(wasCreated, newUserId, loginEmail) {
+    document.getElementById("crossword_not_logged_in_div").style.display = "none";
+    document.getElementById("crossword_logged_in_div").style.display = "block";
+    //document.getElementById("navbar_logged_in_holder").style.display = "block";
+    //document.getElementById("logo_link").href = "/my-puzzles";
+    //closeAccountOverlay();
+    userEmail = loginEmail;
+
+    jUserId = newUserId;
+
+    if (wasCreated == 1 && !adminViewer) {
+        try {
+            await request.form('/save_new_user_tour_status', {
+                user_id: newUserId,
+                simple_tip_status: newUserSimpleTipStatus,
+                simple_tips_seen: newUserSimpleTipsCompleted
+            }, {
+                method: 'POST',
+                responseType: 'text'
+            });
+        } catch (error) {
+            console.error('Error in loginHandle:', error);
+            if (typeof logErrors === 'function') {
+                logErrors(createRequestError(error, 'loginHandle - save_new_user_tour_status'), {
+                    file: 'simple-puzzle.js',
+                    custom_function: 'loginHandle'
+                });
+            }
+        }
+    }
+
+    var hasWords = 0;
+
+
+    $('.answer_word').each(function () {
+        if (this.value.length > 0) {
+            hasWords = 1;
+            return false;
+        }
+    });
+    let puzzleString = '';
+    if (runningStringList.length > 0) {
+        puzzleString = runningStringList[0].replace(/0/g, "");
+    }
+    if (
+        document.getElementById('title_input').value.length === 0 &&
+        puzzleString.length === 0 &&
+        hasWords == 0 &&
+        wasCreated == 0) {
+
+        window.location = '/my-puzzles';
+    } else {
+        $('#alert_button').css("visibility", "hidden");
+        var myString = document.getElementById('create_alert_value_holder').innerHTML;
+        alert(myString);
+
+        if(!adminViewer) {
+            try {
+                const returnedId = await request.form('/async_create_new_puzzle', {
+                    user_id: newUserId
+                }, {
+                    method: 'POST',
+                    responseType: 'text'
+                });
+                jPuzzleId = returnedId;
+                await saveTitle($('#title_input'));
+
+                const saved = await wholesaleSave();
+                if (!saved) {
+                    await saveScratchpad($('#scratchpad'));
+                    return;
+                }
+
+                try {
+                    theTitle = $.trim($('#title_input').val());
+                    window.history.replaceState({}, theTitle, '/crossword-puzzle-maker/' + jPuzzleId);
+                } catch (err) {}
+
+                try {
+                    const returnedValue = await request.form('/check_if_paid', {
+                        user_id: newUserId
+                    }, {
+                        method: 'POST',
+                        responseType: 'json'
+                    });
+
+                    canPublish = returnedValue['can_publish'];
+                    usedCard = returnedValue['used_card'];
+                    activeCard['card_id'] = returnedValue['card_id'];
+                    activeCard['card_type'] = returnedValue['card_type'];
+                    activeCard['card_last_four'] = returnedValue['card_last_four'];
+
+                    if (wasCreated == 1 && !canPublish) {
+                        setPaymentOverlayValues();
+                        if (mostRecentSignup == 'make_printable') {
+                            $alertButtonSpot = $('#alert_button');
+                            $alertButtonSpot.val('Next Step');
+                            $('#alert_button').css("visibility", "visible");
+                            $alertButtonSpot.one('click', function () {
+                                recordSessionEvent('show_payment_overlay_created_account');
+                                showSelectPlanOverlay();
+                                this.value = 'OK';
+                            });
+                            var payString = document.getElementById('create_alert_saved_value_holder_payhere').innerHTML;
+                            alert(payString);
+
+                        } else {
+                            $('#alert_button').css("visibility", "visible");
+                            alert("Puzzle saved to your account! Saved puzzles can be accessed from any computer by logging in to Crossword Hobbyist and going to your 'My Puzzles' page.");
+                            $('#alert_button').on('click',function(){location.reload(true);});
+                        }
+                    }
+
+                    if (canPublish == 1 || canPublish == 2) {
+                        document.getElementById('unpaid_puzzle_div').style.display = 'none';
+                        document.getElementById('paid_puzzle_div').style.display = 'block';
+                        document.getElementById('publish_form').action = '/create_crossword/' + jPuzzleId;
+                    } else {
+                        testGroup = returnedValue['test_group'];
+                        setPaymentOverlayValues();
+                    }
+                    $('#alert_button').css("visibility", "visible");
+                    alert("Puzzle saved to your account! Saved puzzles can be accessed from your 'My Puzzles' page.");
+                } catch (error) {
+                    window.location = '/' + jPuzzleId;
+                }
+
+                await saveScratchpad($('#scratchpad'));
+            } catch (error) {
+                console.error('Error in loginHandle:', error);
+                if (typeof logErrors === 'function') {
+                    logErrors(createRequestError(error, 'loginHandle - async_create_new_puzzle'), {
+                        file: 'simple-puzzle.js',
+                        custom_function: 'loginHandle'
+                    });
+                }
+
+                if (isUnloading == 0) {
+                    alert("Your account was created, but we were unable to save your puzzle.");
+                }
+            }
+        }
+    }
+}
+
+function showSelectPlanOverlay() {
+    //scroll to top
+    window.scrollTo(0, 0);
+    //triggers scroll functions so scrolling doesn't get elements out of alignment
+    $(window).scroll();
+
+    document.getElementById('select_plan_box').style.display = 'block';
+    document.getElementById('payment_overlay_box').style.display = 'none';
+    document.getElementById('payment_overlay').style.display = 'block';
+}
+
+function saveProgress() {
+    if (jUserId != 0) {
+        setMainDocument();
+        saveNow();
+    } else {
+        mostRecentSignup = 'save_progress';
+        signupButton();
+        recordSessionEvent('save_progress_click');
+    }
+}
+
+var freeTrialMsg = function (message) {
+    var template = Handlebars.compile($('#free_trial_template').html());
+
+    var message = $('<div>' + message + '</div>').text();
+
+    var html = template({
+        message: message
+    });
+
+    honk.modal(html, false, 'max-width:400px !important;', false);
+    document.getElementById('alert_overlay').style.display = 'none'; // hide any alerts that might be displayed along with this one.
+}
