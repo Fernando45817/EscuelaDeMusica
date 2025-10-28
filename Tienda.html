@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda Ejemplo</title>
+    <style>
+        /* Estilos básicos para la tienda */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: rgb(255, 145, 0);
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .producto {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .producto:last-child {
+            border-bottom: none;
+        }
+        .precio {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .cantidad-input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #total-container {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #333;
+            text-align: right;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Tienda de Musica</h1>
+
+        <div class="producto" data-precio="12.50">
+            <span>guitarras</span>
+            <span class="precio">$12.50</span>
+            <input type="number" value="0" min="0" class="cantidad-input" onchange="calcularTotal()">
+        </div>
+
+        <div class="producto" data-precio="25.00">
+            <span>bajo electrico</span>
+            <span class="precio">$25.00</span>
+            <input type="number" value="0" min="0" class="cantidad-input" onchange="calcularTotal()">
+        </div>
+
+        <div class="producto" data-precio="5.99">
+            <span>Pan Integral</span>
+            <span class="precio">$5.99</span>
+            <input type="number" value="0" min="0" class="cantidad-input" onchange="calcularTotal()">
+        </div>
+        
+        <div class="producto" data-precio="45.00">
+            <span>Queso Fresco</span>
+            <span class="precio">$45.00</span>
+            <input type="number" value="0" min="0" class="cantidad-input" onchange="calcularTotal()">
+        </div>
+
+        <div id="total-container">
+            Total de la Compra: <span id="total">$0.00</span>
+        </div>
+
+    </div>
+
+    <script>
+        function calcularTotal() {
+            let total = 0;
+            // Obtiene todos los elementos de producto
+            const productos = document.querySelectorAll('.producto');
+            
+            productos.forEach(producto => {
+                // Obtiene el precio del atributo 'data-precio'
+                const precio = parseFloat(producto.getAttribute('data-precio'));
+                
+                // Obtiene la cantidad del input
+                const cantidadInput = producto.querySelector('.cantidad-input');
+                const cantidad = parseInt(cantidadInput.value);
+                
+                // Asegura que la cantidad sea un número y no negativa
+                if (cantidad >= 0 && !isNaN(precio) && !isNaN(cantidad)) {
+                    total += precio * cantidad;
+                }
+            });
+
+            // Muestra el total formateado
+            document.getElementById('total').textContent = '$' + total.toFixed(2);
+        }
+
+        // Ejecutar el cálculo inicial
+        calcularTotal();
+    </script>
+
+</body>
+</html>
