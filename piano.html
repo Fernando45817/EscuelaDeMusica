@@ -198,9 +198,7 @@
     <a href="index.html"><img src="../EscuelaDeMusica/img/EscuelaDeMusica-main/img/regresa-naranja.png" width="100" height="100"></a>
 
 <script>
-    // ---------------------------------------------------
-    // 1. INICIALIZACIÓN Y DEFINICIÓN DE SONIDO
-    // ---------------------------------------------------
+
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioContext();
 
@@ -208,7 +206,6 @@
     const waveformSelector = document.getElementById('waveformSelector');
     const octaveShiftSelector = document.getElementById('octaveShift');
 
-    // 🚨 DEFINICIÓN DE ONDA PERIÓDICA PARA PIANO SIMULADO 🚨
     const numHarmonics = 12;
     const real = new Float32Array(numHarmonics);
     const imag = new Float32Array(numHarmonics);
