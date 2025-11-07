@@ -246,9 +246,7 @@
         'h': 'LA1',   '6': 'LA#1', 
         'j': 'SI1',
         
-        // -----------------------------------------------------
-        // Octava 2 (DO2 a SI2) - Fila QWERTY... (12 Teclas)
-        // -----------------------------------------------------
+
         'q': 'DO2',   '7': 'DO#2', 
         'w': 'RE2',   '8': 'RE#2', 
         'e': 'MI2', 
@@ -258,9 +256,7 @@
         'y': 'LA2',   '-': 'LA#2', 
         'u': 'SI2',
         
-        // -----------------------------------------------------
-        // Octava 3 (DO3 a FA3) - Teclas restantes (4 Teclas)
-        // -----------------------------------------------------
+
         'i': 'DO3',   'o': 'DO#3', 
         'p': 'RE3',   'ñ': 'RE#3', 
         ';': 'MI3',   
@@ -269,9 +265,6 @@
 
     const activeOscillators = {}; 
 
-    // ---------------------------------------------------
-    // 2. FUNCIONES DE SONIDO
-    // ---------------------------------------------------
     function playNote(noteName) {
         if (activeOscillators[noteName]) {
             stopNote(noteName);
@@ -280,15 +273,15 @@
         let freq = noteFrequencies[noteName];
         if (!freq) return; 
 
-        // Lógica de Transposición de Octava 
+ 
         const shiftValue = parseInt(octaveShiftSelector.value);
         freq = freq * Math.pow(2, shiftValue);
 
-        // 🔊 Generación de Audio
+ 
         const selectedWaveform = waveformSelector.value;
         const oscillator = audioCtx.createOscillator();
         
-        // Aplica la onda periódica (piano) o la onda simple seleccionada
+
         if (selectedWaveform === 'piano') {
             oscillator.setPeriodicWave(pianoWave);
         } else {
@@ -305,7 +298,7 @@
 
         oscillator.start();
 
-        // Aplica "decay" (desvanecimiento) para simular el apagado de la nota
+       
         gainNode.gain.exponentialRampToValueAtTime(
             0.0001, 
             audioCtx.currentTime + 1.0 
@@ -327,16 +320,11 @@
         }
     }
 
-    // Función auxiliar para obtener el elemento de la tecla
+
     function getKeyElement(noteName) {
         return document.querySelector(`.key[data-note="${noteName}"]`);
     }
 
-    // ---------------------------------------------------
-    // 3. EVENTOS DE INTERACCIÓN (MOUSE Y TECLADO PC)
-    // ---------------------------------------------------
-    
-    // Eventos de MOUSE / TOUCH
     document.querySelectorAll('.key').forEach(key => {
         const noteName = key.getAttribute('data-note'); 
         
@@ -363,7 +351,6 @@
         });
     });
 
-    // Eventos de TECLADO DE COMPUTADORA
     const keysPressed = {}; 
 
     document.addEventListener('keydown', (e) => {
