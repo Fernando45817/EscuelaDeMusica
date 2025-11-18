@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎶 Música Sonata | Escuela y Tienda</title>
+    <title> academia de Música Sonata | Escuela y Tienda</title>
     <style>
         /* --- VARIABLES DE DISEÑO --- */
         :root {
-            --orange-bg: rgb(255, 136, 0);
             --dark-blue-shadow: rgba(6, 10, 77, 0.7);
             --grey-table-bg: #404040; /* Gris más oscuro */
             --table-border-color: #333;
             --text-color: #f5f5f5;
             --heading-color: white;
             --white-bg-opacity: rgba(255, 255, 255, 0.9);
+            --key-label-color: #6d6d6d; /* Color para las etiquetas del teclado de PC */
         }
 
         /* --- ESTILOS GENERALES --- */
         body {
-            background-color: var(--orange-bg);
+            background-image:url(img/fondo4.jpg);
             margin: 0;
             padding: 0 10px 50px 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -51,7 +51,7 @@
         }
 
         /* Logo principal */
-        body > img:first-of-type {
+        .header-logo {
             display: block;
             margin: 30px auto 0 auto;
             max-width: 90%;
@@ -91,13 +91,13 @@
             text-align: center;
             font-family: 'Impact', sans-serif;
             font-size: 20px;
-            border-collapse: separate; /* Separado para esquinas redondeadas */
+            border-collapse: separate; 
             border-spacing: 0;
             background-color: var(--grey-table-bg);
             border-radius: 15px;
-            overflow: hidden; /* Importante para que los bordes redondeados se vean bien */
+            overflow: hidden; 
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-            width: 95%; /* Ocupa casi todo el ancho */
+            width: 95%; 
             max-width: 1200px;
         }
 
@@ -109,7 +109,6 @@
             background-color: var(--grey-table-bg);
         }
         
-        /* Asegurar que las imágenes dentro de la tabla tengan el tamaño correcto */
         table img {
             width: 100%;
             height: auto;
@@ -133,6 +132,22 @@
         #screen1::before {
             content: "¡Estamos preparando nuestro catálogo de instrumentos!";
         }
+        
+        /* Botón de compra de instrumentos */
+        .BuyInst { margin-top: 10px; }
+        .BuyButton {
+            display: inline-block;
+            color: white; /* Cambiado a blanco para mejor contraste */
+            padding: 15px 30px; /* Reducido un poco */
+            background-color: #388e3c; /* Un verde más agradable */
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8);
+            transition: background-color 0.3s;
+        }
+        .BuyButton:hover { background-color: #2e7d32; }
+
 
         /* --- ENLACES Y FOOTER --- */
         .footer-links {
@@ -141,14 +156,25 @@
             gap: 25px;
             margin: 50px 0;
             flex-wrap: wrap;
+            text-align: center;
         }
-
+        .footer-link-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--heading-color);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
         .footer-links img {
             width: 80px;
             height: 80px;
             border-radius: 50%;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 5px;
         }
+        .footer-links p { margin: 0; }
 
         /* --- BOTÓN DE INSCRIPCIÓN --- */
         .inscription-container {
@@ -174,44 +200,204 @@
             background-color: #040733;
             transform: scale(1.05);
         }
+
+        /* ------------------------------------- */
+        /* --- ESTILOS DEL PIANO VIRTUAL --- */
+        /* ------------------------------------- */
+        .piano-controls {
+            display: flex;
+            justify-content: center; /* Centra el contenedor de controles */
+            gap: 50px;
+            margin: 40px auto 20px auto;
+            color: white;
+            flex-wrap: wrap;
+            max-width: 90%;
+        }
+        .piano-controls h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.2em;
+            text-shadow: none;
+        }
+        .piano-controls select {
+            padding: 8px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 2px solid var(--dark-blue-shadow);
+            background-color: var(--white-bg-opacity);
+            color: #333;
+            font-weight: bold;
+        }
         
+        .piano-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 5px; /* Ajuste para que las teclas quepan */
+            background-color: #333;
+            border-radius: 15px;
+            margin: 0 auto; 
+            max-width: fit-content; /* Se ajusta al contenido */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            border: 5px solid #1a1a1a;
+        }
+
+        .octave {
+            display: flex;
+            position: relative; 
+        }
+
+        /* Estilos generales para todas las teclas */
+        .key {
+            font-size: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: end;
+            padding-bottom: 5px;
+            border-end-start-radius: 7px;
+            border-end-end-radius: 7px;
+            border: 1px solid black;
+            box-sizing: border-box;
+            transition: background-color 0.1s;
+            cursor: pointer;
+            position: relative; /* Para la etiqueta del teclado */
+        }
+
+        /* Etiqueta del teclado (Ej: 'A', '1', 'Q') */
+        .key::after {
+            content: attr(data-key-label);
+            position: absolute;
+            top: 5px;
+            font-size: 9px;
+            font-weight: bold;
+            color: var(--key-label-color);
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 2px 4px;
+            border-radius: 3px;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+
+        /* Estilos para las teclas blancas */
+        .white-keys {
+            display: flex;
+            z-index: 1;
+        }
+
+        .white-key {
+            height: 150px; /* Más largas */
+            width: 45px; /* Más anchas */
+            background: whitesmoke;
+            margin-right: -1px;
+        }
+        /* Ajuste de color para la etiqueta en teclas blancas */
+        .white-key::after {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+
+        /* Estilos para las teclas negras */
+        .black-keys {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            z-index: 2;
+        }
+
+        .black-key {
+            background: black;
+            color: white;
+            height: 90px; /* Más largas */
+            width: 30px;
+            position: absolute; 
+            align-items: center; 
+            padding-bottom: 0;
+        }
+        /* Ajuste de color para la etiqueta en teclas negras */
+        .black-key::after {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+        
+        /* Posicionamiento de las teclas negras (Ajustado a 45px de ancho) */
+        .octave:nth-child(1) .black-keys .black-key:nth-child(1) { left: 30px; } 
+        .octave:nth-child(1) .black-keys .black-key:nth-child(2) { left: 75px; } 
+        .octave:nth-child(1) .black-keys .black-key:nth-child(3) { left: 165px; } 
+        .octave:nth-child(1) .black-keys .black-key:nth-child(4) { left: 210px; } 
+        .octave:nth-child(1) .black-keys .black-key:nth-child(5) { left: 255px; } 
+        
+        .octave:nth-child(2) .black-keys .black-key:nth-child(1) { left: 30px; } 
+        .octave:nth-child(2) .black-keys .black-key:nth-child(2) { left: 75px; } 
+        .octave:nth-child(2) .black-keys .black-key:nth-child(3) { left: 165px; } 
+        .octave:nth-child(2) .black-keys .black-key:nth-child(4) { left: 210px; } 
+        .octave:nth-child(2) .black-keys .black-key:nth-child(5) { left: 255px; } 
+
+        .octave:nth-child(3) .black-keys .black-key:nth-child(1) { left: 30px; } 
+        .octave:nth-child(3) .black-keys .black-key:nth-child(2) { left: 75px; } 
+
+
+        /* Efectos de interacción */
+        .white-key:hover { background-color: #ff9800; } /* Naranja */
+        .black-key:hover { background-color: #5d4037; } /* Marrón Oscuro */
+        
+        .white-key:active,
+        .white-key.playing { 
+            background-color: #e53935 !important; /* Rojo vivo */
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .black-key:active,
+        .black-key.playing { 
+            background-color: #880e4f !important; /* Granate */
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+
         /* ------------------------------------- */
         /* --- RESPONSIVIDAD AVANZADA (MÓVIL) --- */
         /* ------------------------------------- */
         @media (max-width: 768px) {
             h1 { font-size: 2.2em; }
             h2 { font-size: 1.8em; }
-
-            /* Convierte las tablas en un formato de lista vertical */
-            table, thead, tbody, th, td, tr {
-                display: block; /* Cada elemento de tabla se comporta como un div */
-                width: 100%;
-            }
             
-            thead tr {
-                position: absolute; /* Oculta el encabezado en móviles */
-                top: -9999px;
-                left: -9999px;
+            .piano-container {
+                overflow-x: auto; /* Permite desplazamiento horizontal en móviles */
+                justify-content: flex-start; /* Alinea a la izquierda en caso de desbordamiento */
+                max-width: 100%;
+                padding: 10px 5px;
+            }
+            .white-key {
+                height: 100px;
+                width: 35px;
+            }
+            .black-key {
+                height: 60px;
+                width: 25px;
             }
 
-            tr {
-                border: 2px solid var(--table-border-color);
-                margin-bottom: 15px;
-                border-radius: 10px;
-                overflow: hidden;
-            }
+            /* Reajuste de posiciones de teclas negras en móvil (35px de ancho) */
+            .octave:nth-child(1) .black-keys .black-key:nth-child(1),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(1) { left: 23px; } 
+            .octave:nth-child(1) .black-keys .black-key:nth-child(2),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(2) { left: 58px; } 
+            .octave:nth-child(1) .black-keys .black-key:nth-child(3),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(3) { left: 128px; } 
+            .octave:nth-child(1) .black-keys .black-key:nth-child(4),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(4) { left: 163px; } 
+            .octave:nth-child(1) .black-keys .black-key:nth-child(5),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(5) { left: 198px; } 
 
-            td {
-                border: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                position: relative;
-                padding-left: 50%;
-                text-align: left;
-                font-size: 1em;
-                height: auto;
-            }
+            .octave:nth-child(3) .black-keys .black-key:nth-child(1) { left: 23px; } 
+            .octave:nth-child(3) .black-keys .black-key:nth-child(2) { left: 58px; } 
 
-            /* Etiqueta los datos usando el título original de la columna */
+            /* Ocultar las etiquetas de teclado en móvil para liberar espacio */
+            .key::after { content: none; }
+            .key { font-size: 10px; }
+
+            /* ... (El resto de tus estilos de responsividad para tablas se mantiene) ... */
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 2px solid var(--table-border-color); margin-bottom: 15px; border-radius: 10px; overflow: hidden; }
+            td { border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: relative; padding-left: 50%; text-align: left; font-size: 1em; height: auto; }
             .classes-table td:nth-of-type(1):before { content: "Guitarra/Eléctrica:"; font-weight: bold; }
             .classes-table td:nth-of-type(2):before { content: "Bajo/Eléctrico/Acústico:"; font-weight: bold; }
             .classes-table td:nth-of-type(3):before { content: "Ukulele:"; font-weight: bold; }
@@ -220,183 +406,211 @@
             .classes-table td:nth-of-type(6):before { content: "Tololoche:"; font-weight: bold; }
             .classes-table td:nth-of-type(7):before { content: "Teclado:"; font-weight: bold; }
             .classes-table td:nth-of-type(8):before { content: "Baterías:"; font-weight: bold; }
-
-            /* Estilo para las etiquetas de datos */
-            td:before {
-                position: absolute;
-                top: 6px;
-                left: 6px;
-                width: 45%;
-                padding-right: 10px;
-                white-space: nowrap;
-                color: var(--orange-bg);
-                background-color: var(--heading-color);
-                padding: 4px;
-                border-radius: 5px;
-            }
-
-            /* Estilo específico para la tabla de instalaciones */
-            .facilities-table tr {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
-            }
-            .facilities-table td {
-                width: 45%; /* Dos imágenes por fila en móvil */
-                padding: 5px;
-                text-align: center;
-                border: none;
-                padding-left: 5px;
-            }
-            .facilities-table td img {
-                width: 100%;
-                height: 150px;
-            }
+            td:before { position: absolute; top: 6px; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; color: var(--orange-bg); background-color: var(--heading-color); padding: 4px; border-radius: 5px; }
+            .facilities-table tr { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .facilities-table td { width: 45%; padding: 5px; text-align: center; border: none; padding-left: 5px; }
+            .facilities-table td img { width: 100%; height: 150px; }
         }
     </style>
 </head>
 <body>
 
-    <img src="img/logo mejorado 2 sonata.png" alt="Logo de Sonata" width="350px" height="225px">
+    <img src="img/logo mejorado 2 sonata.png" alt="Logo de Sonata" class="header-logo" width="350px" height="225px">
+
+    <h1>Prueba tu talento</h1>
+
+    <div class="piano-controls">
+        <div>
+            <h2>Elige el Tipo de Onda (Timbre)</h2>
+            <select id="waveformSelector">
+                <option value="piano" selected>Piano Simulado</option>
+                <option value="sine">Sinusoidal (Suave)</option>
+                <option value="square">Cuadrada (Synth)</option>
+                <option value="sawtooth">Diente de Sierra (Agresivo)</option>
+                <option value="triangle">Triangular (Flauta/Melodía)</option>
+            </select>
+        </div>
+        <div>
+            <h2>Transposición de Octava</h2>
+            <select id="octaveShift">
+                <option value="0" selected>0 Octavas (Estándar)</option>
+                <option value="1">1 Octava Arriba</option>
+                <option value="2">2 Octavas Arriba</option>
+                <option value="-1">1 Octava Abajo</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="piano-container">
+        
+        <div class="octave">
+            <div class="white-keys">
+                <button class="key white-key" data-note="DO1" data-key-label="A">DO1</button>
+                <button class="key white-key" data-note="RE1" data-key-label="S">RE1</button>
+                <button class="key white-key" data-note="MI1" data-key-label="D">MI1</button>
+                <button class="key white-key" data-note="FA1" data-key-label="F">FA1</button>
+                <button class="key white-key" data-note="SOL1" data-key-label="G">SOL1</button>
+                <button class="key white-key" data-note="LA1" data-key-label="H">LA1</button>
+                <button class="key white-key" data-note="SI1" data-key-label="J">SI1</button>
+            </div>
+            <div class="black-keys">
+                <button class="key black-key" data-note="DO#1" data-key-label="1">DO#1</button>
+                <button class="key black-key" data-note="RE#1" data-key-label="2">RE#1</button>
+                <button class="key black-key" data-note="FA#1" data-key-label="4">FA#1</button>
+                <button class="key black-key" data-note="SOL#1" data-key-label="5">SOL#1</button>
+                <button class="key black-key" data-note="LA#1" data-key-label="6">LA#1</button>
+            </div>
+        </div>
+
+        <div class="octave">
+            <div class="white-keys">
+                <button class="key white-key" data-note="DO2" data-key-label="Q">DO2</button>
+                <button class="key white-key" data-note="RE2" data-key-label="W">RE2</button>
+                <button class="key white-key" data-note="MI2" data-key-label="E">MI2</button>
+                <button class="key white-key" data-note="FA2" data-key-label="R">FA2</button>
+                <button class="key white-key" data-note="SOL2" data-key-label="T">SOL2</button>
+                <button class="key white-key" data-note="LA2" data-key-label="Y">LA2</button>
+                <button class="key white-key" data-note="SI2" data-key-label="U">SI2</button>
+            </div>
+            <div class="black-keys">
+                <button class="key black-key" data-note="DO#2" data-key-label="7">DO#2</button>
+                <button class="key black-key" data-note="RE#2" data-key-label="8">RE#2</button>
+                <button class="key black-key" data-note="FA#2" data-key-label="9">FA#2</button>
+                <button class="key black-key" data-note="SOL#2" data-key-label="0">SOL#2</button>
+                <button class="key black-key" data-note="LA#2" data-key-label="-">LA#2</button>
+            </div>
+        </div>
+
+        <div class="octave">
+            <div class="white-keys">
+                <button class="key white-key" data-note="DO3" data-key-label="I">DO3</button>
+                <button class="key white-key" data-note="RE3" data-key-label="P">RE3</button>
+                <button class="key white-key" data-note="MI3" data-key-label=",">MI3</button>
+                <button class="key white-key" data-note="FA3" data-key-label="K">FA3</button>
+            </div>
+            <div class="black-keys">
+                <button class="key black-key" data-note="DO#3" data-key-label="O">DO#3</button>
+                <button class="key black-key" data-note="RE#3" data-key-label="Ñ">RE#3</button>
+            </div>
+        </div>
+
+    </div>
+
+    <hr>
 
     <h1>SOBRE NOSOTROS</h1>
 
     <ol>
-        Somos una comunidad que enseña a varias personas a tocar varios instrumentos como los que se muestran en la pagina
+        Somos una comunidad que enseña a varias personas a tocar varios instrumentos en nuestras instalaciones como los que se muestran en la página.
     </ol>
 
-    <hr color="black">
+    <hr>
 
     <h1>INSTALACIONES</h1>
 
-    <table border="5px" class="facilities-table">
-        <thead>
-            <tr>
-                <th>
-                    <img src="img/tienda.jpg" alt="Vista de la tienda" width="150px" height="225px">
-                </th>
-                <th>
-                    <img src="img/arriba.jpg" alt="Zona de espera" width="225px" height="150px">
-                </th>
-                <th>
-                    <img src="img/arriba1.jpg" alt="Pasillo de instrumentos" width="225px" height="150px">
-                </th>
-                <th>
-                    <img src="img/arriba2.jpg" alt="Salón de clases" width="225px" height="150px">
-                </th>
-
-            </tr>
-        </thead>
+    <table border="0" class="facilities-table">
         <tbody>
             <tr>
                 <td>
-                    <img src="img/salon1.jpg" alt="Salón de ensayo 1" width="225px" height="150px">
+                    <div class="table-img-container">
+                        <img src="img/tienda.jpg" alt="Vista de la tienda">
+                    </div>
                 </td>
                 <td>
-                    <img src="img/salon2.jpg" alt="Salón de ensayo 2" width="225px" height="150px">
+                    <div class="table-img-container">
+                        <img src="img/arriba.jpg" alt="Zona de espera">
+                    </div>
                 </td>
                 <td>
-                    <img src="img/salom3.jpg" alt="Salón de ensayo 3" width="225px" height="150px">
+                    <div class="table-img-container">
+                        <img src="img/arriba1.jpg" alt="Pasillo de instrumentos">
+                    </div>
                 </td>
                 <td>
-                    <img src="img/foto de evenrt.jpg" alt="Foto de evento" width="225px" height="150px">
+                    <div class="table-img-container">
+                        <img src="img/arriba2.jpg" alt="Salón de clases">
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="table-img-container">
+                        <img src="img/salon1.jpg" alt="Salón de ensayo 1">
+                    </div>
+                </td>
+                <td>
+                    <div class="table-img-container">
+                        <img src="img/salon2.jpg" alt="Salón de ensayo 2">
+                    </div>
+                </td>
+                <td>
+                    <div class="table-img-container">
+                        <img src="img/salom3.jpg" alt="Salón de ensayo 3">
+                    </div>
+                </td>
+                <td>
+                    <div class="table-img-container">
+                        <img src="img/foto de evenrt.jpg" alt="Foto de evento">
+                    </div>
                 </td>
             </tr>
         </tbody>
     </table>
+     
+    <br>
+    <br>
+ 
 
-    <hr color="black">
+    <hr>
+
+    <h1>CLASES DE MÚSICA</h1>
+    <table border="2px" class="classes-table">
+        <thead>
+            <tr>
+                <th>Guitarra / Eléctrica</th>
+                <th>Bajo / Eléctrico / Acústico</th>
+                <th>Ukulele</th>
+                <th>Bandolina</th>
+                <th>Violín</th>
+                <th>Tololoche</th>
+                <th>Teclado</th>
+                <th>Baterías Acústicas / Eléctricas</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><img src="img/guitarras.jpg" alt="Guitarras" width="225px" height="150px"></td>
+                <td><img src="img/bajos electricos.jpg" alt="Bajos" width="225px" height="150px "></td>
+                <td><img src="img/ukulele.jpg" alt="Ukulele"></td>
+                <td><img src="img/mandolina.webp" alt="mandolina"></td>
+                <td><img src="img/Violin.jpg" alt="Violín"></td>
+                <td><img src="img/tololoche-imagen-mejorada.png" alt="Tololoche" width="150px" height="225px"></td>
+                <td><img src="img/teclado.jpg" alt="Teclado" width="225px" height="150px"></td>
+                <td><img src="img/bateria.jpg" alt="Baterías"></td>
+            </tr>
+        </tbody>
+    </table> 
+    <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1507419387150097%2F&show_text=false&width=560&t=0" width="560" height="314" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
+    <br>
+    <br>
+       <a href="tienda-de-musica.html" target="_blank"><img src="img/logo bolsa.webp" alt="tienda" width="200px" height="200px"></a>
+        <a href="piano.html"><img src="../EscuelaDeMusica/img/piano_PNG10893.png" alt="Clases de Piano" width="200px" height="200px"></a>
+     
+
+    <hr>
 
     <h1>INSTRUMENTOS</h1>
 
     <div id="ContenedorPadre" class="block">
         <div id="screen1">
         </div>
+        <div class="BuyInst">
+            <p>Comprar instrumentos:</p>
+            <a href="BuyInstruments.html" class="BuyButton">COMPRAR INSTRUMENTOS</a>
+        </div>
     </div>
 
-    <hr color="black">
-
-    <h1>CLASES DE MUSICA</h1>
-    <table border="2px" class="classes-table">
-        <thead>
-            <tr>
-                <th>
-                    Guitarra / electrica
-                </th>
-                <th>
-                    Bajo / electrico / acustico
-                </th>
-                <th>
-                    Ukulele
-                </th>
-                <th>
-                    Bandolina
-                </th>
-                <th>
-                    Violin
-                </th>
-                <th>
-                    Tololoche
-                </th>
-                <th>
-                    Teclado
-                </th>
-                <th>
-                    Baterias acusticas / electricas
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>
-                    <img src="img/guitarras.jpg" alt="Guitarras" width="225px" height="150px">
-                </td>
-                <td>
-                    <img src="img/bajos electricos.jpg" alt="Bajos" width="225px" height="150px ">
-                </td>
-                <td>
-                    <img src="" alt="Ukulele">
-                </td>
-                <td>
-                    <img src="" alt="Bandolina">
-                </td>
-                <td>
-                    <img src="" alt="Violín">
-                </td>
-                <td>
-                    <img src="" alt="Tololoche">
-                </td>
-                <td>
-                    <img src="" alt="Teclado">
-                </td>
-                <td>
-                    <img src="" alt="Baterías">
-                </td>
-            </tr>
-        </tbody>
-
-        <tbody>
-            <tr>
-                <td>
-                    
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <br>
-    <br>
-    <br>
-
-    <hr color="black">
-
-    <div class="footer-links">
-        <a href="https://maps.app.goo.gl/K9K94wTeLVVHmqof6" target="_blank"><img src="img/mapa.png" alt="Mapa de ubicación" width="200px" height="200px"></a>
-        <a href="piano-final.html"><img src="../EscuelaDeMusica/img/piano_PNG10893.png" alt="Clases de Piano" width="200px" height="200px"></a>
-        <a href="https://www.instagram.com/sonata_vivoperlei/" target="_blank"><img src="instagram-icon-logo-symbol-free-png.webp" alt="Instagram" width="200" height="200"></a>
-        <a href="https://www.facebook.com/search/top?q=academia%20y%20tienda%20de%20m%C3%BAsica%20%22sonata%22" target="_blank"><img src="facebook-logo-clipart-vector-8.png" alt="Facebook" width="200" height="200"></a>
-    </div>
+    <hr>
 
     <h1>INSCRIPCIONES</h1>
 
@@ -404,6 +618,232 @@
         <p>Inscribirse:</p>
         <a href="formularios.html" class="inscription-button">Click para inscribirse</a>
     </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="https://maps.app.goo.gl/K9K94wTeLVVHmqof6" target="_blank" class="footer-link-item">
+                <img src="img/mapa.png" alt="Mapa de ubicación">
+                <p>Ubicación</p>
+            </a>
+            <a href="piano.html" class="footer-link-item">
+                <img src="../EscuelaDeMusica/img/piano_PNG10893.png" alt="Clases de Piano">
+                <p>Clases de Piano</p>
+            </a>
+            <a href="https://www.instagram.com/sonata_vivoperlei/" target="_blank" class="footer-link-item">
+                <img src="instagram-icon-logo-symbol-free-png.webp" alt="Instagram">
+                <p>Instagram</p>
+            </a>
+            <a href="https://www.facebook.com/search/top?q=academia%20y%20tienda%20de%20m%C3%BAsica%20%22sonata%22" target="_blank" class="footer-link-item">
+                <img src="facebook-logo-clipart-vector-8.png" alt="Facebook">
+                <p>Facebook</p>
+            </a>
+        </div>
+        </footer>
+
+    <script>
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        // Obtener los selectores del DOM
+        const waveformSelector = document.getElementById('waveformSelector');
+        const octaveShiftSelector = document.getElementById('octaveShift');
+
+        const numHarmonics = 12;
+        const real = new Float32Array(numHarmonics);
+        const imag = new Float32Array(numHarmonics);
+
+        // Amplitudes de los armónicos para un timbre más rico (similar a un clavinete/piano)
+        real[1] = 1; real[2] = 0.5; real[3] = 0.3; real[4] = 0.25; real[5] = 0.15; real[6] = 0.1;
+
+        const pianoWave = audioCtx.createPeriodicWave(real, imag);
+
+        // Mapeo de Frecuencias (Notas de DO1 a FA3)
+        const noteFrequencies = {
+            'DO1': 65.41, 'DO#1': 69.30, 'RE1': 73.42, 'RE#1': 77.78, 'MI1': 82.41,
+            'FA1': 87.31, 'FA#1': 92.50, 'SOL1': 98.00, 'SOL#1': 103.83, 'LA1': 110.00,
+            'LA#1': 116.54, 'SI1': 123.47,
+            
+            'DO2': 130.81, 'DO#2': 138.59, 'RE2': 146.83, 'RE#2': 155.56, 'MI2': 164.81,
+            'FA2': 174.61, 'FA#2': 185.00, 'SOL2': 196.00, 'SOL#2': 207.65, 'LA2': 220.00,
+            'LA#2': 233.08, 'SI2': 246.94,
+            
+            'DO3': 261.63, 'DO#3': 277.18, 'RE3': 293.66, 'RE#3': 311.13, 'MI3': 329.63,
+            'FA3': 349.23,
+        };
+        
+        // 🔑 MAPEO DE TECLAS COMPLETO (26 NOTAS) 🔑
+        const keyToNoteMap = {
+            // Octava 1 (DO1 a SI1) - Fila ASDFG... (12 Teclas)
+            'a': 'DO1',   '1': 'DO#1', 
+            's': 'RE1',   '2': 'RE#1', 
+            'd': 'MI1',   
+            
+            'f': 'FA1',   '4': 'FA#1', 
+            'g': 'SOL1',  '5': 'SOL#1', 
+            'h': 'LA1',   '6': 'LA#1', 
+            'j': 'SI1',
+            
+
+            'q': 'DO2',   '7': 'DO#2', 
+            'w': 'RE2',   '8': 'RE#2', 
+            'e': 'MI2', 
+            
+            'r': 'FA2',   '9': 'FA#2', 
+            't': 'SOL2',  '0': 'SOL#2', 
+            'y': 'LA2',   '-': 'LA#2', 
+            'u': 'SI2',
+            
+
+            'i': 'DO3',   'o': 'DO#3', 
+            'p': 'RE3',   'ñ': 'RE#3', 
+            ',': 'MI3',   
+            'k': 'FA3'    
+        };
+
+        const activeOscillators = {}; 
+
+        function playNote(noteName) {
+            // Comprobación para evitar sonar si ya está sonando, útil para prevenir errores
+            if (activeOscillators[noteName]) {
+                return;
+            }
+
+            let freq = noteFrequencies[noteName];
+            if (!freq) return; 
+
+            // Aplicar transposición de octava
+            const shiftValue = parseInt(octaveShiftSelector.value);
+            freq = freq * Math.pow(2, shiftValue);
+
+            // Configurar el oscilador
+            const selectedWaveform = waveformSelector.value;
+            const oscillator = audioCtx.createOscillator();
+            
+            if (selectedWaveform === 'piano') {
+                oscillator.setPeriodicWave(pianoWave);
+            } else {
+                oscillator.type = selectedWaveform; 
+            }
+            
+            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime); 
+
+            // Configurar el Gain Node (Volumen y ADSR simple)
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime); // Inicia en 0 para evitar click
+            
+            // Ataque rápido
+            gainNode.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + 0.02);
+            
+            // Decay/Sustain
+            gainNode.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.1);
+
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+
+            activeOscillators[noteName] = { oscillator, gainNode };
+        }
+        
+        function stopNote(noteName) {
+            if (activeOscillators[noteName]) {
+                const { oscillator, gainNode } = activeOscillators[noteName];
+
+                // Release (Liberación)
+                gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime); 
+                gainNode.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5); // 0.5s de release
+                
+                // Detener el oscilador después del release
+                oscillator.stop(audioCtx.currentTime + 0.5);
+
+                delete activeOscillators[noteName];
+            }
+        }
+
+
+        function getKeyElement(noteName) {
+            return document.querySelector(`.key[data-note="${noteName}"]`);
+        }
+
+        // ------------------------------------
+        // Manejo de eventos del ratón/touch
+        // ------------------------------------
+        document.querySelectorAll('.key').forEach(key => {
+            const noteName = key.getAttribute('data-note'); 
+            
+            // Mouse Down / Touch Start (Reproducir)
+            key.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); } 
+                playNote(noteName);
+                key.classList.add('playing');
+            });
+            key.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                playNote(noteName);
+                key.classList.add('playing');
+            }, { passive: false });
+
+            // Mouse Up / Touch End (Detener)
+            key.addEventListener('mouseup', () => { 
+                stopNote(noteName);
+                key.classList.remove('playing'); 
+            });
+            key.addEventListener('mouseleave', () => { 
+                stopNote(noteName);
+                key.classList.remove('playing'); 
+            });
+            key.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                stopNote(noteName);
+                key.classList.remove('playing');
+            }, { passive: false });
+        });
+
+        // ------------------------------------
+        // Manejo de eventos del teclado (PC)
+        // ------------------------------------
+        const keysPressed = {}; 
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            const noteName = keyToNoteMap[key];
+            
+            if (noteName && !keysPressed[key]) {
+                e.preventDefault();
+                
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                playNote(noteName);
+                keysPressed[key] = true;
+
+                const keyElement = getKeyElement(noteName);
+                if (keyElement) {
+                    keyElement.classList.add('playing');
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            const noteName = keyToNoteMap[key];
+            
+            if (noteName && keysPressed[key]) {
+                e.preventDefault();
+                keysPressed[key] = false;
+                stopNote(noteName);
+                
+                const keyElement = getKeyElement(noteName);
+                if (keyElement) {
+                    keyElement.classList.remove('playing');
+                }
+            }
+        });
+
+    </script>
     
 </body>
 </html>
