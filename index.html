@@ -411,6 +411,36 @@
             .facilities-table td { width: 45%; padding: 5px; text-align: center; border: none; padding-left: 5px; }
             .facilities-table td img { width: 100%; height: 150px; }
         }
+        /* 1. Contenedor: Esto oculta el texto cuando se sale de los límites */
+.marquee-container {
+    width: 100%;
+    overflow: hidden; /* ¡Clave para el efecto! */
+    white-space: nowrap; /* Evita que el texto salte de línea */
+    box-sizing: border-box;
+    padding: 10px 0;
+    background-color: #f0f0f0; /* Fondo sutil para destacar */
+}
+
+/* 2. Texto: La clase que tendrá la animación */
+.marquee-text {
+    display: inline-block;
+    padding-left: 100%; /* Empieza completamente fuera del contenedor */
+    /* Aplica la animación */
+    animation: scrolling-text 15s linear infinite;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* 3. Definición de la Animación */
+@keyframes scrolling-text {
+    0% {
+        transform: translate(0, 0); /* Posición inicial (fuera del contenedor) */
+    }
+    100% {
+        transform: translate(-100%, 0); /* Posición final (se desplaza su propio ancho a la izquierda) */
+    }
+}
     </style>
 </head>
 <body>
@@ -503,7 +533,9 @@
     <ol>
         Somos una comunidad que enseña a varias personas a tocar varios instrumentos en nuestras instalaciones como los que se muestran en la página.
     </ol>
-
+    <img src="img/foto de evenrt.jpg" alt="evento" width="400" height="200">
+    <img src="img/foto flores.jpg" alt="evento" width="400" height="200">
+    <img src="img/foto viaje.jpg" alt="evento" width="400" height="200">
     <hr>
 
     <h1>INSTALACIONES</h1>
@@ -511,8 +543,8 @@
     <table border="5px" class="facilities-table">
         <thead>
             <tr>
-                <th><img src="img/tienda.jpg" alt="Vista de la tienda" width="150px" height="225px"></th>
-                <th><img src="img/arriba.jpg" alt="Zona de espera" width="225px" height="150px"></th>
+                <th><img src="img/tienda.jpg" alt="Vista de la tienda" width="150px" height="150px"></th>
+                <th><img src="img/arriba.jpg" alt="Zona de espera" width="225px" height="250px"></th>
                 <th><img src="img/arriba1.jpg" alt="Pasillo de instrumentos" width="225px" height="150px"></th>
                 <th><img src="img/arriba2.jpg" alt="Salón de clases" width="225px" height="150px"></th>
             </tr>
@@ -552,16 +584,18 @@
             <tr>
                 <td><img src="img/guitarras.jpg" alt="Guitarras" width="225px" height="150px"></td>
                 <td><img src="img/bajos electricos.jpg" alt="Bajos" width="225px" height="150px "></td>
-                <td><img src="img/ukulele.jpg" alt="Ukulele"></td>
-                <td><img src="img/mandolina.webp" alt="mandolina"></td>
-                <td><img src="img/Violin.jpg" alt="Violín"></td>
-                <td><img src="img/tololoche-imagen-mejorada.png" alt="Tololoche" width="150px" height="225px"></td>
+                <td><img src="img/ukulele.jpg" alt="Ukulele" width="225px" height="150px"></td>
+                <td><img src="img/mandolina.webp" alt="mandolina" width="225px" height="150px"></td>
+                <td><img src="img/Violin.jpg" alt="Violín" width="225px" height="150px"></td>
+                <td><img src="img/tololoche-imagen-mejorada.png" alt="Tololoche" width="225px" height="150px"></td>
                 <td><img src="img/teclado.jpg" alt="Teclado" width="225px" height="150px"></td>
-                <td><img src="img/bateria.jpg" alt="Baterías"></td>
+                <td><img src="img/bateria.jpg" alt="Baterías" width="225px" height="150px"></td>
             </tr>
         </tbody>
     </table> 
-    <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1507419387150097%2F&show_text=false&width=560&t=0" width="560" height="314" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
+    <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1507419387150097%2F&show_text=false&width=560&t=0" width="500" height="320" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
+    <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F842999191450670%2F&show_text=false&width=560&t=0" width="500" height="320" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
+    <iframe src="https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1243862750882661%2F&show_text=false&width=220&t=0" width="220" height="476" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
     <br>
     <br>
        <a href="tienda-de-musica.html" target="_blank"><img src="img/logo bolsa.webp" alt="tienda" width="200px" height="200px"></a>
@@ -577,13 +611,16 @@
         </div>
         <div class="BuyInst">
             <p>Comprar instrumentos:</p>
-            <a href="BuyInstruments.html" class="BuyButton">COMPRAR INSTRUMENTOS</a>
+            <a href="tienda-de-musica.html" class="BuyButton">COMPRAR INSTRUMENTOS</a>
         </div>
     </div>
 
     <hr>
 
     <h1>INSCRIPCIONES</h1>
+    <marquee behavior="scroll" direction="left">
+    ¡Inscríbete ahora!
+    </marquee>
 
     <div class="inscription-container">
         <p>Inscribirse:</p>
@@ -608,6 +645,10 @@
                 <img src="facebook-logo-clipart-vector-8.png" alt="Facebook">
                 <p>Facebook</p>
             </a>
+            <a href="whatsapp://send?phone=528180290034" target="_blank" class="footer-link-item">
+            <img src="img/whatsapp-png-logo-1.png" alt="whatsapp-png-logo-1">
+            <p>whatsapp</p>
+            </a>"
         </div>
         </footer>
 

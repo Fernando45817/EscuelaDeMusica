@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda con Publicación de Facebook</title>
+    <style>
+        /* Variables CSS */
+        :root {
+            --text-color: #333;
+            --main-color: #CC4400;
+            --background-content: white;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilos Generales */
+        body {
+            background-image: url(img/fondo4.jpg);
+            background-attachment: fixed; /* Opcional: para que la imagen de fondo no se mueva */
+            background-size: cover; /* Para asegurar que cubra todo el fondo */
+            margin: 0;
+            padding: 0 10px 50px 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            display: flex; /* Usamos flexbox para centrar el contenido en el eje principal (horizontal) */
+            flex-direction: column;
+            align-items: center; /* Centra horizontalmente los elementos hijos (logo, regreso, contenido, publicaciones) */
+        }
+
+        h1 {
+            color: var(--main-color);
+            text-align: center;
+            margin-top: 0;
+        }
+
+        /* Encabezado */
+        .encabezado {
+            display: flex;
+            justify-content: center; /* Centra el logo y el botón */
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+            position: relative; /* Para posicionar el botón de regreso si es necesario */
+        }
+        
+        /* Logo */
+        .encabezado img:first-child {
+            width: 350px;
+            height: auto; /* Mantener la proporción */
+        }
+
+        /* Botón de Regreso */
+        .regreso {
+            position: absolute;
+            left: 10px; /* Posiciona el botón a la izquierda */
+            top: 20px;
+        }
+
+        .regreso img {
+            width: 80px; /* Reduje el tamaño para que sea un botón más estándar */
+            height: auto;
+            transition: transform 0.2s;
+        }
+
+        .regreso img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Contenido Principal */
+        .contenido {
+            background-color: var(--background-content);
+            padding: 30px;
+            margin: 20px 0;
+            max-width: 600px;
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            text-align: center;
+        }
+        
+        /* Contenedor de Publicaciones de Facebook */
+        .publicaciones {
+            display: flex;
+            flex-wrap: wrap; /* Permite que las publicaciones se envuelvan a la siguiente línea */
+            gap: 20px; /* Espacio entre las publicaciones */
+            justify-content: center; /* Centra las publicaciones */
+            width: 100%;
+            max-width: 1500px; /* Ancho máximo para el contenedor de publicaciones */
+            margin-top: 30px;
+        }
+        
+        /* Contenedor individual de Facebook */
+        .contenedor-facebook {
+            background-color: var(--background-content);
+            box-shadow: 0 2px 4px var(--shadow-color);
+            border-radius: 5px;
+            padding: 10px;
+            /* Ajuste el ancho para que quepan varias en una fila, pero que también se adapte */
+            width: 100%; 
+            max-width: 520px; /* Un poco más que el ancho del iframe para padding */
+            box-sizing: border-box;
+            overflow: hidden; /* Evita desbordamiento si el iframe es muy grande */
+        }
+        
+        .contenedor-facebook iframe {
+            display: block; /* Elimina espacio extra debajo del iframe */
+            width: 100%; /* El iframe toma el ancho completo del contenedor */
+            /* Se recomienda mantener un alto fijo o mínimo, ya que Facebook no da un alto flexible */
+            height: 700px; /* Un alto consistente para las publicaciones */
+            border: none;
+        }
+
+        /* Media Query para responsividad en móviles */
+        @media (max-width: 600px) {
+            .regreso {
+                left: 5px;
+                top: 5px;
+            }
+            
+            .regreso img {
+                width: 60px;
+            }
+
+            .encabezado img:first-child {
+                width: 250px;
+            }
+
+            .contenido {
+                padding: 20px;
+                margin: 10px 0;
+            }
+
+            .publicaciones {
+                flex-direction: column; /* Apila las publicaciones verticalmente */
+                gap: 15px;
+            }
+            
+            .contenedor-facebook {
+                max-width: 100%;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    
+    <div class="encabezado">
+        <img src="img/logo mejorado 2 sonata.png" alt="Logo de Sonata">
+         <a href="index.html" class="regreso">
+            <img src="../EscuelaDeMusica/img/EscuelaDeMusica-main/img/regresa-naranja.png" alt="Regresar" width="100" height="100">
+        </a>
+    </div>
+
+    <div class="contenido">
+        <h1>Tienda de Música</h1>
+        <p>Este es el espacio para comprar los instrumentos que quieras. Aquí puedes ver las publicaciones de nuestra página de Facebook.</p>
+    </div>
+
+    <div class="publicaciones">
+        
+        <div class="contenedor-facebook">
+            <iframe 
+                src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Facademialacasadesonata%2Fposts%2Fpfbid0m6Up4FD4hgafJwUc2B3PWqdQykCkQydg29rZuhaGFEx54tmFGp1pHQWmwKb1PtM3l&show_text=true&width=500" 
+                scrolling="no" 
+                frameborder="0" 
+                allowfullscreen="true" 
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        
+        <div class="contenedor-facebook">
+            <iframe 
+                src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Facademialacasadesonata%2Fposts%2Fpfbid0pwVwNEnXyyDDoB2TT2iYgpRXoWA5zE3W3QELv7mZZvNgQfWe4NkaqXxRtTrcTWzXl&show_text=false&width=500" 
+                scrolling="no" 
+                frameborder="0" 
+                allowfullscreen="true" 
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                style="height: 500px;"> </iframe>
+        </div>
+        
+        <div class="contenedor-facebook">
+            <iframe 
+                src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fphoto.php%3Ffbid%3D1371085934730569%26set%3Da.598626255309878%26type%3D3&show_text=false&width=500" 
+                scrolling="no" 
+                frameborder="0" 
+                allowfullscreen="true" 
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        
+        <div class="contenedor-facebook">
+            <iframe 
+                src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fphoto.php%3Ffbid%3D1383822810123548%26set%3Da.598626258643211%26type%3D3&show_text=false&width=500" 
+                scrolling="no" 
+                frameborder="0" 
+                allowfullscreen="true" 
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        
+        <div class="contenedor-facebook">
+            <iframe 
+                src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fphoto.php%3Ffbid%3D1485708339934994%26set%3Da.598626255309878%26type%3D3&show_text=false&width=500" 
+                scrolling="no" 
+                frameborder="0" 
+                allowfullscreen="true" 
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+            </iframe>
+        </div>
+
+        <div class="contenedor-facebook">
+            <iframe 
+                src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fphoto.php%3Ffbid%3D1478557410650087%26set%3Da.598626255309878%26type%3D3&show_text=false&width=500" 
+                scrolling="no" 
+                frameborder="0" 
+                allowfullscreen="true" 
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        
+        <div class="contenedor-facebook">
+            <p style="text-align: center; color: var(--text-color);">¡Más publicaciones pronto!</p>
+        </div>
+    </div>
+</body>
+</html>

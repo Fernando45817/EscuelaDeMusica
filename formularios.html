@@ -3,79 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscripción | Escuela de Música Armonía</title>
+    <title>Inscripción | Academia SONATA</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ff7b00;
-            padding: 20px;
+        /* 🎨 Variables CSS para consistencia */
+        :root {
+            --text-color: #333;
+            --main-color-orange: #CC4400; /* Naranja/Rojo de tu logo */
+            --highlight-color: #ff6347; /* Tomate */
+            --bg-form-color: #fff;
+            --button-color: var(--main-color-orange);
+            --button-hover-color: #AA3300;
         }
+
+        /* 🖼️ Estilos del Cuerpo */
+        body {
+            background-image: url(img/fondo4.jpg);
+            background-attachment: fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0 10px 50px 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 🖼️ Encabezado (Logo y Botón de Regreso) */
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 20px;
+            padding-top: 20px;
+        }
+
+        .encabezado .logo {
+            width: 350px;
+            height: auto;
+            margin-right: auto;
+        }
+
+        .encabezado .regreso img {
+            width: 80px;
+            height: auto;
+            transition: transform 0.2s;
+        }
+        
+        /* 📝 Estilos del Formulario */
         .registration-form {
             max-width: 600px;
+            width: 100%;
             margin: 0 auto;
             padding: 30px;
-            background: #fff;
+            background: var(--bg-form-color);
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-left: 5px solid #ff6347; /* Tomate */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-left: 5px solid var(--highlight-color);
         }
+
         h2 {
             text-align: center;
-            color: #333;
+            color: var(--main-color-orange);
             margin-bottom: 25px;
             border-bottom: 2px solid #eee;
             padding-bottom: 10px;
+            font-size: 1.8em;
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: #555;
+            color: #444;
         }
+
         input[type="text"],
         input[type="email"],
         input[type="tel"],
         select,
         textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+            border-radius: 6px;
+            box-sizing: border-box;
             font-size: 16px;
+            transition: border-color 0.3s;
         }
-        .radio-group label,
-        .checkbox-group label {
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--highlight-color);
+            outline: none;
+        }
+
+        .radio-group label {
             display: inline-block;
-            margin-right: 15px;
+            margin-right: 20px;
             font-weight: normal;
         }
+
+        /* Estilo del Separador */
+        .separator {
+            border-top: 1px solid #ddd;
+            margin: 25px 0;
+        }
+
+        /* 🟢 Botón de Envío a WhatsApp */
         button {
             display: block;
             width: 100%;
-            padding: 12px;
-            background-color: #4CAF50; /* Verde */
+            padding: 15px;
+            background-color: var(--button-color);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 18px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.1s;
+            margin-top: 30px;
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: var(--button-hover-color);
+            transform: translateY(-1px);
+        }
+
+        /* Media Query simple para mejor visualización en móviles */
+        @media (max-width: 650px) {
+            .encabezado .logo {
+                width: 250px;
+            }
+            .encabezado .regreso img {
+                width: 60px;
+            }
         }
     </style>
 </head>
 <body>
-      <img src="img/logo mejorado 2 sonata.png" alt="Logo de Sonata" width="350px" height="225px">
-          <a href="index.html"><img src="../EscuelaDeMusica/img/EscuelaDeMusica-main/img/regresa-naranja.png" width="100" height="100"></a>
+    
+    <div class="encabezado">
+        <img src="img/logo mejorado 2 sonata.png" alt="Logo de Sonata" class="logo">
+        <a href="index.html" class="regreso">
+            <img src="../EscuelaDeMusica/img/EscuelaDeMusica-main/img/regresa-naranja.png" alt="Regresar">
+        </a>
+    </div>
 
-
-    <form class="registration-form" action="/submit-form" method="POST">
+    <form class="registration-form" onsubmit="enviarWhatsApp(event)">
         <h2>Inscripción | Academia SONATA</h2>
         
         <div class="form-group">
@@ -83,11 +164,10 @@
             <input type="text" id="nombre" name="nombre" required>
         </div>
 
-           <div class="form-group">
+        <div class="form-group">
             <label for="apellidos">Apellidos:</label>
             <input type="text" id="apellidos" name="apellidos" required>
         </div>
-        
         
         <div class="form-group">
             <label for="email">Correo Electrónico:</label>
@@ -95,31 +175,31 @@
         </div>
         
         <div class="form-group">
-            <label for="telefono">Teléfono:</label>
-            <input type="tel" id="telefono" name="telefono" placeholder="Ej: 555-123-4567" required>
+            <label for="telefono">Teléfono (con Código de País):</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="Ej: 52 55 1234 5678" required>
         </div>
 
-        ---
+        <div class="separator"></div>
         
         <div class="form-group">
             <label for="instrumento">Instrumento de Interés:</label>
             <select id="instrumento" name="instrumento" required>
                 <option value="">Seleccione un instrumento</option>
-                <option value="guitarra">Guitarra</option>
-                <option value="piano">Piano/Teclado</option>
-                <option value="bateria">Batería</option>
-                <option value="violin">Violín</option>
-                <option value="voz">Bajo electrico</option>
-                <option value="otro">Otro (Especifique abajo)</option>
+                <option value="Guitarra">Guitarra</option>
+                <option value="Piano/Teclado">Piano/Teclado</option>
+                <option value="Bateria">Batería</option>
+                <option value="Violin">Violín</option>
+                <option value="Bajo electrico">Bajo Eléctrico</option>
+                <option value="Otro">Otro (Especifique en comentarios)</option>
             </select>
         </div>
 
         <div class="form-group">
             <label>Nivel de Experiencia:</label>
             <div class="radio-group">
-                <label><input type="radio" name="nivel" value="principiante" required> Principiante (Sin experiencia)</label>
-                <label><input type="radio" name="nivel" value="intermedio"> Intermedio (Conocimientos básicos)</label>
-                <label><input type="radio" name="nivel" value="avanzado"> Avanzado (Experiencia previa)</label>
+                <label><input type="radio" name="nivel" value="Principiante" required> Principiante</label>
+                <label><input type="radio" name="nivel" value="Intermedio"> Intermedio</label>
+                <label><input type="radio" name="nivel" value="Avanzado"> Avanzado</label>
             </div>
         </div>
         
@@ -128,19 +208,64 @@
             <textarea id="dias" name="dias" rows="3" placeholder="Ej: Lunes 5 PM, Miércoles 6 PM"></textarea>
         </div>
 
-        ---
+        <div class="separator"></div>
 
         <div class="form-group">
             <label for="comentarios">Comentarios Adicionales (Metas musicales, dudas, etc.):</label>
             <textarea id="comentarios" name="comentarios" rows="4"></textarea>
         </div>
         
-        <button type="submit" onclick="Inscribir()">Enviar Solicitud de Inscripción</button>
+        <button type="submit">Enviar Solicitud por WhatsApp</button>
     </form>
 
 
-   
+    <script>
+        function enviarWhatsApp(event) {
+            event.preventDefault(); // Evita el envío tradicional del formulario
+            
+            const form = event.target;
+            const nombre = form.nombre.value + ' ' + form.apellidos.value;
+            const email = form.email.value;
+            const telefono = form.telefono.value;
+            const instrumento = form.instrumento.value;
+            
+            // Verificamos que se haya seleccionado un nivel
+            const nivelElemento = form.elements['nivel'];
+            let nivel = '';
+            for (let i = 0; i < nivelElemento.length; i++) {
+                if (nivelElemento[i].checked) {
+                    nivel = nivelElemento[i].value;
+                    break;
+                }
+            }
+            if (!nivel) {
+                 nivel = 'No especificado';
+            }
 
-    <script src="javascriptForForms.js"></script>
+            const dias = form.dias.value || 'No especificado';
+            const comentarios = form.comentarios.value || 'No hay comentarios adicionales.';
+            
+            // ⚠️ Número de destino: 52 81 8020 8785 (formato para WhatsApp: 52 + 10 dígitos)
+            const numeroDestino = '528180208785'; 
+            
+            // 📝 Formatear el mensaje, usando %0A para saltos de línea y %09 para tabulaciones/espacios
+            const mensaje = `*Nueva Solicitud de Inscripción - Academia SONATA*%0A%0A` +
+                            `*Datos del Alumno:*%0A` +
+                            `  Nombre: ${nombre}%0A` +
+                            `  Email: ${email}%0A` +
+                            `  Teléfono: ${telefono}%0A%0A` +
+                            `*Detalles del Curso:*%0A` +
+                            `  Instrumento de Interés: ${instrumento}%0A` +
+                            `  Nivel de Experiencia: ${nivel}%0A` +
+                            `  Días/Horarios Preferidos: ${dias}%0A%0A` +
+                            `*Comentarios Adicionales:*%0A` +
+                            `${comentarios}`;
+
+            const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroDestino}&text=${encodeURIComponent(mensaje)}`;
+            
+            // Redirigir al usuario
+            window.open(urlWhatsApp, '_blank');
+        }
+    </script>
 </body>
 </html>
