@@ -16,15 +16,15 @@
         /* Estilos Generales */
         body {
             background-image: url(img/fondo4.jpg);
-            background-attachment: fixed; /* Opcional: para que la imagen de fondo no se mueva */
-            background-size: cover; /* Para asegurar que cubra todo el fondo */
+            background-attachment: fixed;
+            background-size: cover;
             margin: 0;
             padding: 0 10px 50px 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: var(--text-color);
-            display: flex; /* Usamos flexbox para centrar el contenido en el eje principal (horizontal) */
+            display: flex;
             flex-direction: column;
-            align-items: center; /* Centra horizontalmente los elementos hijos (logo, regreso, contenido, publicaciones) */
+            align-items: center;
         }
 
         h1 {
@@ -36,29 +36,30 @@
         /* Encabezado */
         .encabezado {
             display: flex;
-            justify-content: center; /* Centra el logo y el botón */
+            justify-content: center;
             align-items: center;
             width: 100%;
             max-width: 1200px;
             margin-bottom: 20px;
-            position: relative; /* Para posicionar el botón de regreso si es necesario */
+            position: relative;
         }
         
         /* Logo */
         .encabezado img:first-child {
             width: 350px;
-            height: auto; /* Mantener la proporción */
+            height: auto;
         }
 
         /* Botón de Regreso */
         .regreso {
             position: absolute;
-            left: 10px; /* Posiciona el botón a la izquierda */
+            left: 10px; 
             top: 20px;
         }
 
         .regreso img {
-            width: 80px; /* Reduje el tamaño para que sea un botón más estándar */
+            /* 💡 CAMBIO: Se redujo el tamaño de 80px a 50px */
+            width: 50px; 
             height: auto;
             transition: transform 0.2s;
         }
@@ -82,11 +83,11 @@
         /* Contenedor de Publicaciones de Facebook */
         .publicaciones {
             display: flex;
-            flex-wrap: wrap; /* Permite que las publicaciones se envuelvan a la siguiente línea */
-            gap: 20px; /* Espacio entre las publicaciones */
-            justify-content: center; /* Centra las publicaciones */
+            flex-wrap: wrap; 
+            gap: 20px; 
+            justify-content: center; 
             width: 100%;
-            max-width: 1500px; /* Ancho máximo para el contenedor de publicaciones */
+            max-width: 1500px; 
             margin-top: 30px;
         }
         
@@ -96,20 +97,24 @@
             box-shadow: 0 2px 4px var(--shadow-color);
             border-radius: 5px;
             padding: 10px;
-            /* Ajuste el ancho para que quepan varias en una fila, pero que también se adapte */
             width: 100%; 
-            max-width: 520px; /* Un poco más que el ancho del iframe para padding */
+            max-width: 520px; 
             box-sizing: border-box;
-            overflow: hidden; /* Evita desbordamiento si el iframe es muy grande */
+            overflow: hidden; 
         }
         
         .contenedor-facebook iframe {
-            display: block; /* Elimina espacio extra debajo del iframe */
-            width: 100%; /* El iframe toma el ancho completo del contenedor */
-            /* Se recomienda mantener un alto fijo o mínimo, ya que Facebook no da un alto flexible */
+            display: block;
+            width: 100%; 
             height: 700px; /* Un alto consistente para las publicaciones */
             border: none;
         }
+        
+        /* Ajuste de altura para la publicación corta (Ejemplo de la segunda publicación) */
+        .contenedor-facebook iframe[style*="height: 500px"] {
+             height: 500px;
+        }
+
 
         /* Media Query para responsividad en móviles */
         @media (max-width: 600px) {
@@ -119,7 +124,8 @@
             }
             
             .regreso img {
-                width: 60px;
+                /* 💡 CAMBIO EN MEDIA QUERY: Se ajusta a 40px para móviles */
+                width: 40px; 
             }
 
             .encabezado img:first-child {
@@ -132,7 +138,7 @@
             }
 
             .publicaciones {
-                flex-direction: column; /* Apila las publicaciones verticalmente */
+                flex-direction: column; 
                 gap: 15px;
             }
             
@@ -147,9 +153,7 @@
     
     <div class="encabezado">
         <img src="img/logo mejorado 2 sonata.png" alt="Logo de Sonata">
-         <a href="index.html" class="regreso">
-            <img src="../EscuelaDeMusica/img/EscuelaDeMusica-main/img/regresa-naranja.png" alt="Regresar" width="100" height="100">
-        </a>
+
     </div>
 
     <div class="contenido">
@@ -222,6 +226,10 @@
         <div class="contenedor-facebook">
             <p style="text-align: center; color: var(--text-color);">¡Más publicaciones pronto!</p>
         </div>
+    </div>
+        <a href="index.html" class="regreso">
+            <img src="../EscuelaDeMusica/img/EscuelaDeMusica-main/img/regresa-naranja.png" alt="Regresar" height="300" width="300">
+        </a>
     </div>
 </body>
 </html>
