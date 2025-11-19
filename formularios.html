@@ -176,7 +176,7 @@
         
         <div class="form-group">
             <label for="telefono">Teléfono (con Código de País):</label>
-            <input type="tel" id="telefono" name="telefono" placeholder="Ej: 52 55 1234 5678" required>
+            <input type="tel" id="telefono" name="telefono" placeholder="Ej: 52 81 8029 0034" required>
         </div>
 
         <div class="separator"></div>
@@ -245,10 +245,10 @@
             const dias = form.dias.value || 'No especificado';
             const comentarios = form.comentarios.value || 'No hay comentarios adicionales.';
             
-            // ⚠️ Número de destino: 52 81 8020 8785 (formato para WhatsApp: 52 + 10 dígitos)
-            const numeroDestino = '528180208785'; 
+            // ⚠️ Nuevo Número de destino: +52 1 81 8029 0034 (formato para WhatsApp: 52 + 10 dígitos)
+            const numeroDestino = '528180290034'; 
             
-            // 📝 Formatear el mensaje, usando %0A para saltos de línea y %09 para tabulaciones/espacios
+            // 📝 Formatear el mensaje
             const mensaje = `*Nueva Solicitud de Inscripción - Academia SONATA*%0A%0A` +
                             `*Datos del Alumno:*%0A` +
                             `  Nombre: ${nombre}%0A` +
