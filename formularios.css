@@ -1,4 +1,4 @@
- /* 🎨 Variables CSS para consistencia */
+ /* Variables CSS para consistencia */
         :root {
             --text-color: #333;
             --main-color-orange: #CC4400; /* Naranja/Rojo de tu logo */
@@ -8,7 +8,7 @@
             --button-hover-color: #AA3300;
         }
 
-        /* 🖼️ Estilos del Cuerpo */
+        /*  Estilos del Cuerpo */
         body {
             background-image: url(img/fondo4.jpg);
             background-attachment: fixed;
@@ -22,7 +22,7 @@
             align-items: center;
         }
 
-        /* 🖼️ Encabezado (Logo y Botón de Regreso) */
+        /*  Encabezado (Logo y Botón de Regreso) */
         .encabezado {
             display: flex;
             justify-content: space-between;
@@ -45,7 +45,7 @@
             transition: transform 0.2s;
         }
         
-        /* 📝 Estilos del Formulario */
+        /*  Estilos del Formulario */
         .registration-form {
             max-width: 600px;
             width: 100%;
@@ -108,7 +108,7 @@
             margin: 25px 0;
         }
 
-        /* 🟢 Botón de Envío a WhatsApp */
+        /* Botón de Envío a WhatsApp */
         button {
             display: block;
             width: 100%;
