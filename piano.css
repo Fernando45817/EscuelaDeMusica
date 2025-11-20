@@ -1,0 +1,109 @@
+ body{
+        background-image: url(img/EscuelaDeMusica-main/img/Teatro-Rialto_Sala-Principal.jpg);
+        background-position: center;
+        background-size: cover; 
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+     }
+        /* Controles generales */
+        .controls {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            color: white;
+            text-align: center;
+        }
+        .controls h2 {
+            margin-bottom: 5px;
+            font-size: 1.2em;
+        }
+        .controls select {
+            padding: 5px;
+            font-size: 1em;
+            border-radius: 5px;
+        }
+
+        /* Contenedor principal para todas las octavas */
+        .piano-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            margin-top: 20px; 
+        }
+
+        /* Contenedor de cada octava (C-B) - CLAVE: position: relative */
+        .octave {
+            display: flex;
+            position: relative; 
+        }
+
+        /* Estilos generales para todas las teclas */
+        .key {
+            font-size: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: end;
+            padding-bottom: 5px;
+            border-end-start-radius: 7px;
+            border-end-end-radius: 7px;
+            border: 1px solid black;
+            box-sizing: border-box;
+            transition: background-color 0.1s;
+            cursor: pointer;
+        }
+
+        /* Estilos para las teclas blancas */
+        .white-keys {
+            display: flex;
+            z-index: 1;
+        }
+
+        .white-key {
+            height: 110px;
+            width: 40px;
+            background: whitesmoke;
+            margin-right: -1px;
+        }
+
+        /* Estilos para las teclas negras */
+        .black-keys {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            z-index: 2;
+        }
+
+        .black-key {
+            background: black;
+            color: white;
+            height: 70px;
+            width: 30px;
+            position: absolute; 
+            align-items: center; 
+        }
+        
+        /* Posicionamiento de las teclas negras reutilizable */
+        .black-keys .black-key:nth-child(1) { left: 25px; } /* DO# */
+        .black-keys .black-key:nth-child(2) { left: 65px; } /* RE# */
+        .black-keys .black-key:nth-child(3) { left: 145px; } /* FA# */
+        .black-keys .black-key:nth-child(4) { left: 185px; } /* SOL# */
+        .black-keys .black-key:nth-child(5) { left: 225px; } /* LA# */
+
+        /* Efectos de interacción (AÑADIDOS para el teclado de PC) */
+        .white-key:hover { background-color: orangered; }
+        .black-key:hover { background-color: brown; }
+        
+        .white-key:active,
+        .white-key.playing { 
+            background-color: red !important; 
+        }
+        .black-key:active,
+        .black-key.playing { 
+            background-color: maroon !important; 
+        }

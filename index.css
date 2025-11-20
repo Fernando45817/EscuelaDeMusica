@@ -1,0 +1,436 @@
+/* --- VARIABLES DE DISEÑO --- */
+        :root {
+            --dark-blue-shadow: rgba(6, 10, 77, 0.7);
+            --grey-table-bg: #404040; /* Gris más oscuro */
+            --table-border-color: #333;
+            --text-color: #f5f5f5;
+            --heading-color: white;
+            --white-bg-opacity: rgba(255, 255, 255, 0.9);
+            --key-label-color: #6d6d6d; /* Color para las etiquetas del teclado de PC */
+        }
+
+        /* --- ESTILOS GENERALES --- */
+        body {
+            background-image:url(img/fondo4.jpg);
+            margin: 0;
+            padding: 0 10px 50px 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+        }
+
+        /* --- TÍTULOS --- */
+        h1, h2 {
+            text-align: center;
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+            color: var(--heading-color);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            margin: 40px 0 20px 0;
+            letter-spacing: 2px;
+        }
+
+        h1 { font-size: 3em; }
+
+        /* --- IMÁGENES y HOVER --- */
+        img {
+            box-shadow: 0 6px 15px 5px var(--dark-blue-shadow);
+            border-radius: 8px;
+            object-fit: cover;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        img:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 20px 8px var(--dark-blue-shadow);
+        }
+
+        /* Logo principal */
+        .header-logo {
+            display: block;
+            margin: 30px auto 0 auto;
+            max-width: 90%;
+            height: auto;
+        }
+
+        /* --- SECCIÓN SOBRE NOSOTROS --- */
+        ol { 
+            text-align: center;
+            list-style: none;
+            padding: 25px;
+            margin: 20px auto;
+            max-width: 850px;
+            background-color: var(--white-bg-opacity);
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1.2em;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* --- SEPARADOR (HR) --- */
+        hr {
+            border: none;
+            height: 4px;
+            background-color: black;
+            margin: 50px auto;
+            max-width: 90%;
+            border-radius: 2px;
+        }
+
+        /* --- TABLAS (INSTALACIONES y CLASES) --- */
+        table {
+            margin: 50px auto;
+            padding: 15px;
+            border: 10px solid var(--table-border-color);
+            text-align: center;
+            font-family: 'Impact', sans-serif;
+            font-size: 20px;
+            border-collapse: separate; 
+            border-spacing: 0;
+            background-color: var(--grey-table-bg);
+            border-radius: 15px;
+            overflow: hidden; 
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            width: 95%; 
+            max-width: 1200px;
+        }
+
+        th, td {
+            border: 3px solid var(--table-border-color);
+            padding: 12px 8px;
+            color: var(--heading-color);
+            vertical-align: top;
+            background-color: var(--grey-table-bg);
+        }
+        
+        table img {
+            width: 100%;
+            height: auto;
+            max-width: 250px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- SECCIÓN INSTRUMENTOS (Contenedor vacío) --- */
+        #ContenedorPadre {
+            text-align: center;
+            margin: 30px auto;
+            padding: 50px 20px;
+            background-color: rgba(255, 255, 255, 0.15);
+            max-width: 800px;
+            border-radius: 15px;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.8);
+            font-style: italic;
+            font-size: 1.2em;
+        }
+        #screen1::before {
+            content: "¡Estamos preparando nuestro catálogo de instrumentos!";
+        }
+        
+        /* Botón de compra de instrumentos */
+        .BuyInst { margin-top: 10px; }
+        .BuyButton {
+            display: inline-block;
+            color: white; /* Cambiado a blanco para mejor contraste */
+            padding: 15px 30px; /* Reducido un poco */
+            background-color: #388e3c; /* Un verde más agradable */
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8);
+            transition: background-color 0.3s;
+        }
+        .BuyButton:hover { background-color: #2e7d32; }
+
+
+        /* --- ENLACES Y FOOTER --- */
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 50px 0;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+        .footer-link-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--heading-color);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .footer-links img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 5px;
+        }
+        .footer-links p { margin: 0; }
+
+        /* --- BOTÓN DE INSCRIPCIÓN --- */
+        .inscription-container {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .inscription-button {
+            display: inline-block;
+            background-color: var(--dark-blue-shadow);
+            color: white;
+            padding: 18px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 1.6em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--heading-color);
+        }
+
+        .inscription-button:hover {
+            background-color: #040733;
+            transform: scale(1.05);
+        }
+
+        /* ------------------------------------- */
+        /* --- ESTILOS DEL PIANO VIRTUAL --- */
+        /* ------------------------------------- */
+        .piano-controls {
+            display: flex;
+            justify-content: center; /* Centra el contenedor de controles */
+            gap: 50px;
+            margin: 40px auto 20px auto;
+            color: white;
+            flex-wrap: wrap;
+            max-width: 90%;
+        }
+        .piano-controls h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.2em;
+            text-shadow: none;
+        }
+        .piano-controls select {
+            padding: 8px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 2px solid var(--dark-blue-shadow);
+            background-color: var(--white-bg-opacity);
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .piano-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 5px; /* Ajuste para que las teclas quepan */
+            background-color: #333;
+            border-radius: 15px;
+            margin: 0 auto; 
+            max-width: fit-content; /* Se ajusta al contenido */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            border: 5px solid #1a1a1a;
+        }
+
+        .octave {
+            display: flex;
+            position: relative; 
+        }
+
+        /* Estilos generales para todas las teclas */
+        .key {
+            font-size: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: end;
+            padding-bottom: 5px;
+            border-end-start-radius: 7px;
+            border-end-end-radius: 7px;
+            border: 1px solid black;
+            box-sizing: border-box;
+            transition: background-color 0.1s;
+            cursor: pointer;
+            position: relative; /* Para la etiqueta del teclado */
+        }
+
+        /* Etiqueta del teclado (Ej: 'A', '1', 'Q') */
+        .key::after {
+            content: attr(data-key-label);
+            position: absolute;
+            top: 5px;
+            font-size: 9px;
+            font-weight: bold;
+            color: var(--key-label-color);
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 2px 4px;
+            border-radius: 3px;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+
+        /* Estilos para las teclas blancas */
+        .white-keys {
+            display: flex;
+            z-index: 1;
+        }
+
+        .white-key {
+            height: 150px; /* Más largas */
+            width: 45px; /* Más anchas */
+            background: whitesmoke;
+            margin-right: -1px;
+        }
+        /* Ajuste de color para la etiqueta en teclas blancas */
+        .white-key::after {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+
+        /* Estilos para las teclas negras */
+        .black-keys {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            z-index: 2;
+        }
+
+        .black-key {
+            background: black;
+            color: white;
+            height: 90px; /* Más largas */
+            width: 30px;
+            position: absolute; 
+            align-items: center; 
+            padding-bottom: 0;
+        }
+        /* Ajuste de color para la etiqueta en teclas negras */
+        .black-key::after {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+        
+        /* Posicionamiento de las teclas negras (Ajustado a 45px de ancho) */
+        .octave:nth-child(1) .black-keys .black-key:nth-child(1) { left: 30px; } 
+        .octave:nth-child(1) .black-keys .black-key:nth-child(2) { left: 75px; } 
+        .octave:nth-child(1) .black-keys .black-key:nth-child(3) { left: 165px; } 
+        .octave:nth-child(1) .black-keys .black-key:nth-child(4) { left: 210px; } 
+        .octave:nth-child(1) .black-keys .black-key:nth-child(5) { left: 255px; } 
+        
+        .octave:nth-child(2) .black-keys .black-key:nth-child(1) { left: 30px; } 
+        .octave:nth-child(2) .black-keys .black-key:nth-child(2) { left: 75px; } 
+        .octave:nth-child(2) .black-keys .black-key:nth-child(3) { left: 165px; } 
+        .octave:nth-child(2) .black-keys .black-key:nth-child(4) { left: 210px; } 
+        .octave:nth-child(2) .black-keys .black-key:nth-child(5) { left: 255px; } 
+
+        .octave:nth-child(3) .black-keys .black-key:nth-child(1) { left: 30px; } 
+        .octave:nth-child(3) .black-keys .black-key:nth-child(2) { left: 75px; } 
+
+
+        /* Efectos de interacción */
+        .white-key:hover { background-color: #ff9800; } /* Naranja */
+        .black-key:hover { background-color: #5d4037; } /* Marrón Oscuro */
+        
+        .white-key:active,
+        .white-key.playing { 
+            background-color: #e53935 !important; /* Rojo vivo */
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .black-key:active,
+        .black-key.playing { 
+            background-color: #880e4f !important; /* Granate */
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+
+        /* ------------------------------------- */
+        /* --- RESPONSIVIDAD AVANZADA (MÓVIL) --- */
+        /* ------------------------------------- */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2em; }
+            h2 { font-size: 1.8em; }
+            
+            .piano-container {
+                overflow-x: auto; /* Permite desplazamiento horizontal en móviles */
+                justify-content: flex-start; /* Alinea a la izquierda en caso de desbordamiento */
+                max-width: 100%;
+                padding: 10px 5px;
+            }
+            .white-key {
+                height: 100px;
+                width: 35px;
+            }
+            .black-key {
+                height: 60px;
+                width: 25px;
+            }
+
+            /* Reajuste de posiciones de teclas negras en móvil (35px de ancho) */
+            .octave:nth-child(1) .black-keys .black-key:nth-child(1),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(1) { left: 23px; } 
+            .octave:nth-child(1) .black-keys .black-key:nth-child(2),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(2) { left: 58px; } 
+            .octave:nth-child(1) .black-keys .black-key:nth-child(3),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(3) { left: 128px; } 
+            .octave:nth-child(1) .black-keys .black-key:nth-child(4),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(4) { left: 163px; } 
+            .octave:nth-child(1) .black-keys .black-key:nth-child(5),
+            .octave:nth-child(2) .black-keys .black-key:nth-child(5) { left: 198px; } 
+
+            .octave:nth-child(3) .black-keys .black-key:nth-child(1) { left: 23px; } 
+            .octave:nth-child(3) .black-keys .black-key:nth-child(2) { left: 58px; } 
+
+            /* Ocultar las etiquetas de teclado en móvil para liberar espacio */
+            .key::after { content: none; }
+            .key { font-size: 10px; }
+
+            /* ... (El resto de tus estilos de responsividad para tablas se mantiene) ... */
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 2px solid var(--table-border-color); margin-bottom: 15px; border-radius: 10px; overflow: hidden; }
+            td { border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: relative; padding-left: 50%; text-align: left; font-size: 1em; height: auto; }
+            .classes-table td:nth-of-type(1):before { content: "Guitarra/Eléctrica:"; font-weight: bold; }
+            .classes-table td:nth-of-type(2):before { content: "Bajo/Eléctrico/Acústico:"; font-weight: bold; }
+            .classes-table td:nth-of-type(3):before { content: "Ukulele:"; font-weight: bold; }
+            .classes-table td:nth-of-type(4):before { content: "Bandolina:"; font-weight: bold; }
+            .classes-table td:nth-of-type(5):before { content: "Violín:"; font-weight: bold; }
+            .classes-table td:nth-of-type(6):before { content: "Tololoche:"; font-weight: bold; }
+            .classes-table td:nth-of-type(7):before { content: "Teclado:"; font-weight: bold; }
+            .classes-table td:nth-of-type(8):before { content: "Baterías:"; font-weight: bold; }
+            td:before { position: absolute; top: 6px; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; color: var(--orange-bg); background-color: var(--heading-color); padding: 4px; border-radius: 5px; }
+            .facilities-table tr { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .facilities-table td { width: 45%; padding: 5px; text-align: center; border: none; padding-left: 5px; }
+            .facilities-table td img { width: 100%; height: 150px; }
+        }
+        /* 1. Contenedor: Esto oculta el texto cuando se sale de los límites */
+.marquee-container {
+    width: 100%;
+    overflow: hidden; /* ¡Clave para el efecto! */
+    white-space: nowrap; /* Evita que el texto salte de línea */
+    box-sizing: border-box;
+    padding: 10px 0;
+    background-color: #f0f0f0; /* Fondo sutil para destacar */
+}
+
+/* 2. Texto: La clase que tendrá la animación */
+.marquee-text {
+    display: inline-block;
+    padding-left: 100%; /* Empieza completamente fuera del contenedor */
+    /* Aplica la animación */
+    animation: scrolling-text 15s linear infinite;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* 3. Definición de la Animación */
+@keyframes scrolling-text {
+    0% {
+        transform: translate(0, 0); /* Posición inicial (fuera del contenedor) */
+    }
+    100% {
+        transform: translate(-100%, 0); /* Posición final (se desplaza su propio ancho a la izquierda) */
+    }
+}
