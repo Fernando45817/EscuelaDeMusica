@@ -188,12 +188,26 @@
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
             border: 2px solid var(--heading-color);
         }
-
+        .aboutus{
+            display: grid;
+            grid-template-columns: auto auto auto;
+            
+        }
+        .videos{
+            display: grid;
+            grid-template-columns: auto auto auto;
+        }
+        .tiendas{
+            display: grid;
+            grid-template-columns: auto auto;
+        }
         .inscription-button:hover {
             background-color: #040733;
             transform: scale(1.05);
         }
-
+        .marquee{
+            color: #2e7d32;
+        }
         /* ------------------------------------- */
         /* --- ESTILOS DEL PIANO VIRTUAL --- */
         /* ------------------------------------- */
