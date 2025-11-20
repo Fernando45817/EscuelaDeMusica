@@ -32,10 +32,14 @@
 
         /* --- IMÁGENES y HOVER --- */
         img {
-            box-shadow: 0 6px 15px 5px var(--dark-blue-shadow);
+            
             border-radius: 8px;
             object-fit: cover;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .logo{
+            border-radius: 8px;
+            object-fit: cover;
         }
 
         img:hover {
