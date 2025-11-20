@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia de Música Sonata | Escuela y Tienda</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<style>
+/* ========================================================= */
+/* 1. ESTILOS BASE (ESTILOS PREDETERMINADOS, INCLUYE ESCRITORIO) */
+/* ========================================================= */
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    text-align: center; 
+    padding-bottom: 80px; 
+}
+
+/* Base de fluidez CRUCIAL */
+img {
+    max-width: 100%; 
+    height: auto; 
+    display: block; 
+    margin: 0 auto; 
+    border-radius: 5px; 
+}
+
+.header-logo {
+    width: 350px; 
+    margin: 20px auto; 
+}
+
+/* Estilos de escritorio: Los elementos se muestran en FILA */
+.aboutus, .tiendas, .videos, .footer-links, .piano-controls {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: center;
+    gap: 20px; 
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Asegurar que los iFrames de Facebook se vean bien en escritorio (tamaño predeterminado) */
+.videos iframe {
+    width: auto; /* Permite el tamaño fijo si no está en Media Query */
+    max-width: 560px;
+    height: 320px; 
+    border-radius: 8px; 
+}
+
+/* --- ESTILOS DE TABLA y PIANO PARA PERMITIR SCROLL HORIZONTAL --- */
+
+/* Esto se aplica en todas las vistas, ya que las tablas son muy anchas */
+.piano-container, .table-wrapper {
+    overflow-x: auto; 
+    max-width: 100%;
+    margin: 20px auto;
+}
+
+.piano-container {
+    display: flex;
+    white-space: nowrap; 
+    padding-bottom: 10px;
+}
+
+.facilities-table, .classes-table {
+    width: 100%; 
+    border-collapse: collapse;
+    min-width: 900px; /* Asegura el scroll horizontal */
+    white-space: nowrap; 
+}
+
+.footer-link-item {
+    text-decoration: none;
+    color: white;
+    text-align: center;
+    transition: opacity 0.3s;
+}
+
+/* ========================================================= */
+/* 2. MEDIA QUERY (ESTILOS ESPECÍFICOS PARA MÓVILES)         */
+/* Solo se aplican cuando el ancho es 768px o menos       */
+/* ========================================================= */
+
+@media screen and (max-width: 768px) {
+    
+    /* 1. CONTENEDORES: Cambiar a columna para apilar los elementos */
+    .aboutus, .tiendas, .videos, .footer-links, .piano-controls {
+        flex-direction: column; /* ¡CLAVE! Los elementos se apilan verticalmente */
+        align-items: center;
+        gap: 15px;
+    }
+    
+    /* 2. LOGO: Permitir que se reduzca más en móvil */
+    .header-logo {
+        max-width: 90%; 
+        width: 100%;
+    }
+
+    /* 3. IMÁGENES: Que ocupen un buen ancho en el contenedor */
+    .aboutus img, .tiendas img {
+        width: 90%; /* Ocupa el 90% del ancho del contenedor */
+        max-width: none; 
+    }
+
+    /* 4. VIDEOS: Ajustar la altura para que sean más compactos en móvil */
+    .videos iframe {
+        width: 90%;
+        height: 250px; 
+        max-width: none; /* Ignora el max-width de escritorio */
+    }
+
+    /* 5. FOOTER: Ajustes de presentación en columna */
+    .footer-link-item {
+        width: 90%; /* Ocupa más espacio para ser más fácil de tocar */
+        border-bottom: 1px solid #555;
+        padding-bottom: 10px;
+    }
+    
+    .footer-link-item:last-child {
+        border-bottom: none;
+    }
+
+    /* 6. PIANO: La disposición de teclas blancas y negras debe mantenerse horizontal, 
+          solo se asegura que el contenedor principal esté apilado con los controles */
+
+    /* La tabla y el piano ya tienen overflow-x: auto, que funciona para móvil */
+}
+</style>
+<body>
+
+    <img src="img/logo mejorado 2 sonata.png" alt="Logo de Sonata" class="header-logo">
+
+    <h1>Prueba tu talento</h1>
+
+    <div class="piano-controls">
+        <div>
+            <h2>Elige el Tipo de Onda (Timbre)</h2>
+            <select id="waveformSelector">
+                <option value="piano" selected>Piano Simulado</option>
+                <option value="sine">Sinusoidal (Suave)</option>
+                <option value="square">Cuadrada (Synth)</option>
+                <option value="sawtooth">Diente de Sierra (Agresivo)</option>
+                <option value="triangle">Triangular (Flauta/Melodía)</option>
+            </select>
+        </div>
+        <div>
+            <h2>Transposición de Octava</h2>
+            <select id="octaveShift">
+                <option value="0" selected>0 Octavas (Estándar)</option>
+                <option value="1">1 Octava Arriba</option>
+                <option value="2">2 Octavas Arriba</option>
+                <option value="-1">1 Octava Abajo</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="piano-container">
+        
+        <div class="octave">
+            <div class="white-keys">
+                <button class="key white-key" data-note="DO1" data-key-label="A">DO1</button>
+                <button class="key white-key" data-note="RE1" data-key-label="S">RE1</button>
+                <button class="key white-key" data-note="MI1" data-key-label="D">MI1</button>
+                <button class="key white-key" data-note="FA1" data-key-label="F">FA1</button>
+                <button class="key white-key" data-note="SOL1" data-key-label="G">SOL1</button>
+                <button class="key white-key" data-note="LA1" data-key-label="H">LA1</button>
+                <button class="key white-key" data-note="SI1" data-key-label="J">SI1</button>
+            </div>
+            <div class="black-keys">
+                <button class="key black-key" data-note="DO#1" data-key-label="1">DO#1</button>
+                <button class="key black-key" data-note="RE#1" data-key-label="2">RE#1</button>
+                <button class="key black-key" data-note="FA#1" data-key-label="4">FA#1</button>
+                <button class="key black-key" data-note="SOL#1" data-key-label="5">SOL#1</button>
+                <button class="key black-key" data-note="LA#1" data-key-label="6">LA#1</button>
+            </div>
+        </div>
+
+        <div class="octave">
+            <div class="white-keys">
+                <button class="key white-key" data-note="DO2" data-key-label="Q">DO2</button>
+                <button class="key white-key" data-note="RE2" data-key-label="W">RE2</button>
+                <button class="key white-key" data-note="MI2" data-key-label="E">MI2</button>
+                <button class="key white-key" data-note="FA2" data-key-label="R">FA2</button>
+                <button class="key white-key" data-note="SOL2" data-key-label="T">SOL2</button>
+                <button class="key white-key" data-note="LA2" data-key-label="Y">LA2</button>
+                <button class="key white-key" data-note="SI2" data-key-label="U">SI2</button>
+            </div>
+            <div class="black-keys">
+                <button class="key black-key" data-note="DO#2" data-key-label="7">DO#2</button>
+                <button class="key black-key" data-note="RE#2" data-key-label="8">RE#2</button>
+                <button class="key black-key" data-note="FA#2" data-key-label="9">FA#2</button>
+                <button class="key black-key" data-note="SOL#2" data-key-label="0">SOL#2</button>
+                <button class="key black-key" data-note="LA#2" data-key-label="-">LA#2</button>
+            </div>
+        </div>
+
+        <div class="octave">
+            <div class="white-keys">
+                <button class="key white-key" data-note="DO3" data-key-label="I">DO3</button>
+                <button class="key white-key" data-note="RE3" data-key-label="P">RE3</button>
+                <button class="key white-key" data-note="MI3" data-key-label=";">MI3</button>
+                <button class="key white-key" data-note="FA3" data-key-label="K">FA3</button>
+            </div>
+            <div class="black-keys">
+                <button class="key black-key" data-note="DO#3" data-key-label="O">DO#3</button>
+                <button class="key black-key" data-note="RE#3" data-key-label="Ñ">RE#3</button>
+            </div>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <h1>SOBRE NOSOTROS</h1>
+
+    <p>
+        Somos una comunidad que enseña a varias personas a tocar varios instrumentos en nuestras instalaciones como los que se muestran en la página.
+    </p>
+
+    <div class="aboutus">
+        <img src="img/foto de evenrt.jpg" alt="evento">
+        <img src="img/foto flores.jpg" alt="evento">
+        <img src="img/foto viaje.jpg" alt="evento">
+    </div>
+    <hr>
+
+    <h1>INSTALACIONES</h1>
+
+    <div class="table-wrapper">
+        <table border="5px" class="facilities-table">
+            <thead>
+                <tr>
+                    <th><img src="img/arriba.jpg" alt="Zona de espera"></th>
+                    <th><img src="img/arriba1.jpg" alt="Pasillo de instrumentos"></th>
+                    <th><img src="img/arriba2.jpg" alt="Salón de clases"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><img src="img/salon1.jpg" alt="Salón de ensayo 1"> <br>Salón 1</td>
+                    <td><img src="img/salon2.jpg" alt="Salón de ensayo 2"> <br>Salón 2</td>
+                    <td><img src="img/salom3.jpg" alt="Salón de ensayo 3"> <br>Salón 3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <br>
+    
+    <hr>
+
+    <h1>CLASES DE MÚSICA</h1>
+    <div class="table-wrapper">
+        <table border="2px" class="classes-table">
+            <thead>
+                <tr>
+                    <th>Guitarra / Eléctrica</th>
+                    <th>Bajo / Eléctrico / Acústico</th>
+                    <th>Ukulele</th>
+                    <th>Bandolina</th>
+                    <th>Violín</th>
+                    <th>Tololoche</th>
+                    <th>Teclado</th>
+                    <th>Baterías Acústicas / Eléctricas</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><img src="img/guitarra-electrica-sobre-fondo-madera_392895-280912.webp" alt="Guitarras"></td>
+                    <td><img src="img/bajos electricos.jpg" alt="Bajos"></td>
+                    <td><img src="img/pexels-photo-2772147.webp" alt="Ukulele"></td>
+                    <td><img src="img/mandolina.webp" alt="mandolina"></td>
+                    <td><img src="img/Violin.jpg" alt="Violín"></td>
+                    <td><img src="img/tololoche-imagen-mejorada.png" alt="Tololoche"></td>
+                    <td><img src="img/teclado.jpg" alt="Teclado"></td>
+                    <td><img src="img/bateria.jpg" alt="Baterías"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div> 
+    <div class="videos">
+        <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1507419387150097%2F&show_text=false&width=560&t=0" width="500" height="320" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
+        <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F842999191450670%2F&show_text=false&width=560&t=0" width="500" height="320" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
+        <iframe src="https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1243862750882661%2F&show_text=false&width=220&t=0" width="220" height="476" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
+    </div>
+    <br>
+    <br>
+    
+    <div class="tiendas">
+        <a href="tienda-de-musica.html" target="_blank"><img src="img/logo bolsa.webp" alt="tienda"></a>
+        <a href="piano.html"><img src="../EscuelaDeMusica/img/piano_PNG10893.png" alt="Clases de Piano"></a>
+    </div>
+
+    <hr>
+
+    <h1>INSTRUMENTOS</h1>
+
+    <div id="ContenedorPadre" class="block">
+        <div id="screen1">
+        </div>
+        <div class="BuyInst">
+            <p>Catalogo de instrumentos:</p>
+            <a href="tienda-de-musica.html" class="BuyButton">CATALOGO DE INSTRUMENTOS</a>
+        </div>
+    </div>
+
+    <hr>
+
+    <h1>INSCRIPCIONES</h1>
+    <marquee behavior="scroll" direction="left" class="marquee">
+    ¡Inscríbete ahora!
+    </marquee>
+
+    <div class="inscription-container">
+        <p>Inscribirse:</p>
+        <a href="formularios.html" class="inscription-button">Click para inscribirse</a>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="https://maps.app.goo.gl/K9K94wTeLVVHmqof6" target="_blank" class="footer-link-item">
+                <img src="img/mapa.png" alt="Mapa de ubicación">
+                <p>Ubicación</p>
+            </a>
+            <a href="piano.html" class="footer-link-item">
+                <img src="../EscuelaDeMusica/img/piano_PNG10893.png" alt="Clases de Piano">
+                <p>Clases de Piano</p>
+            </a>
+            <a href="https://www.instagram.com/sonata_vivoperlei/" target="_blank" class="footer-link-item">
+                <img src="instagram-icon-logo-symbol-free-png.webp" alt="Instagram">
+                <p>Instagram</p>
+            </a>
+            <a href="https://www.facebook.com/search/top?q=academia%20y%20tienda%20de%20m%C3%BAsica%20%22sonata%22" target="_blank" class="footer-link-item">
+                <img src="facebook-logo-clipart-vector-8.png" alt="Facebook">
+                <p>Facebook</p>
+            </a>
+            <a href="whatsapp://send?phone=528180290034" target="_blank" class="footer-link-item">
+            <img src="img/whatsapp-png-logo-1.png" alt="whatsapp-png-logo-1">
+            <p>whatsapp</p>
+            </a>
+        </div>
+    </footer>
+
+    <script src="index.js"></script>
+    
+</body>
+</html>
