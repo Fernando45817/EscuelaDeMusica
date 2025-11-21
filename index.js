@@ -124,13 +124,10 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
             return document.querySelector(`.key[data-note="${noteName}"]`);
         }
 
-        // ------------------------------------
-        // Manejo de eventos del ratón/touch
-        // ------------------------------------
         document.querySelectorAll('.key').forEach(key => {
             const noteName = key.getAttribute('data-note'); 
             
-            // Mouse Down / Touch Start (Reproducir)
+
             key.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 if (audioCtx.state === 'suspended') { audioCtx.resume(); } 
