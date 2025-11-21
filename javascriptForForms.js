@@ -7,7 +7,6 @@
             const telefono = form.telefono.value;
             const instrumento = form.instrumento.value;
             
-            // Verificamos que se haya seleccionado un nivel
             const nivelElemento = form.elements['nivel'];
             let nivel = '';
             for (let i = 0; i < nivelElemento.length; i++) {
@@ -26,7 +25,6 @@
             // ⚠️ Nuevo Número de destino: +52 1 81 8029 0034 (formato para WhatsApp: 52 + 10 dígitos)
             const numeroDestino = '528180290034'; 
             
-            // 📝 Formatear el mensaje
             const mensaje = `*Nueva Solicitud de Inscripción - Academia SONATA*%0A%0A` +
                             `*Datos del Alumno:*%0A` +
                             `  Nombre: ${nombre}%0A` +
