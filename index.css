@@ -193,17 +193,39 @@
             border: 2px solid var(--heading-color);
         }
         .aboutus{
-            display: grid;
-            grid-template-columns: auto auto auto;
+            
+              display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 50px 0;
+            flex-wrap: wrap;
+            text-align: center;
             
         }
+        .imggrid{
+              display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 50px 0;
+            flex-wrap: wrap;
+            text-align: center;
+        }
         .videos{
-            display: grid;
-            grid-template-columns: auto auto auto;
+              display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 50px 0;
+            flex-wrap: wrap;
+            text-align: center;
         }
         .tiendas{
-            display: grid;
-            grid-template-columns: auto auto;
+            
+              display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 50px 0;
+            flex-wrap: wrap;
+            text-align: center;
         }
         .inscription-button:hover {
             background-color: #040733;
@@ -212,12 +234,10 @@
         .marquee{
             color: #2e7d32;
         }
-        /* ------------------------------------- */
-        /* --- ESTILOS DEL PIANO VIRTUAL --- */
-        /* ------------------------------------- */
+     
         .piano-controls {
             display: flex;
-            justify-content: center; /* Centra el contenedor de controles */
+            justify-content: center;
             gap: 50px;
             margin: 40px auto 20px auto;
             color: white;
@@ -242,11 +262,11 @@
         .piano-container {
             display: flex;
             justify-content: center;
-            padding: 20px 5px; /* Ajuste para que las teclas quepan */
+            padding: 20px 5px;
             background-color: #333;
             border-radius: 15px;
             margin: 0 auto; 
-            max-width: fit-content; /* Se ajusta al contenido */
+            max-width: fit-content;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
             border: 5px solid #1a1a1a;
         }

@@ -7,10 +7,6 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <style>
-/* ========================================================= */
-/* ESTILOS BASE (CONFIGURACIÓN MÓVIL PREDETERMINADA)          */
-/* Estos estilos aplican para todas las pantallas.            */
-/* ========================================================= */
 
 body {
     margin: 0;
@@ -20,7 +16,7 @@ body {
     padding-bottom: 80px; 
 }
 
-/* Base de fluidez CRUCIAL */
+/* Base de fluidez*/
 img {
     max-width: 100%; 
     height: auto; 
@@ -29,39 +25,31 @@ img {
     border-radius: 5px; 
 }
 
-/* LOGO: Usa el estilo ajustado para móvil */
 .header-logo {
-    max-width: 90%; /* Máximo 90% del ancho de la pantalla */
-    width: 100%; 
+    width: 350px; 
     margin: 20px auto; 
 }
 
-/* CONTENEDORES: Se apilan los elementos verticalmente (diseño de columna para móvil) */
-.aboutus, .tiendas, .videos, .footer-links, .piano-controls {
+/* Estilos de escritorio*/
+.tiendas, .videos, .footer-links, .piano-controls {
     display: flex;
-    flex-direction: column; /* CLAVE: Los elementos se apilan verticalmente */
-    align-items: center; /* Centrar elementos en la columna */
+    flex-wrap: wrap; 
     justify-content: center;
-    gap: 15px; /* Espacio compacto entre elementos */
+    gap: 20px; 
     padding: 10px;
     margin-bottom: 20px;
 }
 
-/* IMÁGENES EN ABOUT US Y TIENDAS: Se ajustan para ocupar un buen ancho en el móvil */
-.aboutus img, .tiendas img {
-    width: 90%; /* Ajuste a 90% para que las imágenes sean visibles */
-    max-width: none; 
-}
 
-/* VIDEOS: Ajuste para que sean más compactos y ocupen el ancho en móvil */
 .videos iframe {
-    width: 90%;
-    height: 250px; 
-    max-width: none; 
+    width: auto; 
+    max-width: 560px;
+    height: 320px; 
     border-radius: 8px; 
 }
 
 /* --- ESTILOS DE TABLA y PIANO PARA PERMITIR SCROLL HORIZONTAL --- */
+
 
 .piano-container, .table-wrapper {
     overflow-x: auto; 
@@ -78,25 +66,59 @@ img {
 .facilities-table, .classes-table {
     width: 100%; 
     border-collapse: collapse;
-    min-width: 900px; /* Asegura el scroll horizontal */
+    min-width: 900px; 
     white-space: nowrap; 
 }
 
-/* FOOTER: Ajustes de presentación en columna */
 .footer-link-item {
     text-decoration: none;
-    color: white; 
+    color: white;
     text-align: center;
     transition: opacity 0.3s;
-    
-    /* Estilos de presentación en columna (móvil): */
-    width: 90%; 
-    border-bottom: 1px solid #555;
-    padding-bottom: 10px;
 }
+
+
+@media screen and (max-width: 768px) {
     
-.footer-link-item:last-child {
-    border-bottom: none;
+    /* 1. CONTENEDORES: Cambiar a columna para apilar los elementos */
+    .tiendas, .videos, .footer-links, .piano-controls {
+        flex-direction: column; /* ¡CLAVE! Los elementos se apilan verticalmente */
+        align-items: center;
+        gap: 15px;
+    }
+    
+    /* 2. LOGO: Permitir que se reduzca más en móvil */
+    .header-logo {
+        max-width: 90%; 
+        width: 100%;
+    }
+
+    /* 3. IMÁGENES: Que ocupen un buen ancho en el contenedor */
+    .aboutus img, .tiendas img {
+        width: 10%; /* Ocupa el 90% del ancho del contenedor */
+        max-width: none; 
+    }
+
+    /* 4. VIDEOS: Ajustar la altura para que sean más compactos en móvil */
+    .videos iframe {
+        width: 90%;
+        height: 250px; 
+        max-width: none; /* Ignora el max-width de escritorio */
+    }
+
+    /* 5. FOOTER: Ajustes de presentación en columna */
+    .footer-link-item {
+        width: 90%; /* Ocupa más espacio para ser más fácil de tocar */
+        border-bottom: 1px solid #555;
+        padding-bottom: 10px;
+    }
+    
+    .footer-link-item:last-child {
+        border-bottom: none;
+    }
+
+
+    /* La tabla y el piano ya tienen overflow-x: auto, que funciona para móvil */
 }
 </style>
 <body>
@@ -191,7 +213,7 @@ img {
         Somos una comunidad que enseña a varias personas a tocar varios instrumentos en nuestras instalaciones como los que se muestran en la página.
     </p>
 
-    <div class="aboutus">
+    <div>
         <img src="img/foto de evenrt.jpg" alt="evento" width="400" height="550">
         <img src="img/foto flores.jpg" alt="evento" width="400" height="550">
         <img src="img/foto viaje.jpg" alt="evento" width="400" height="550">
@@ -201,7 +223,7 @@ img {
     <h1>INSTALACIONES</h1>
 
     <div class="table-wrapper">
-        <table border="5px" class="facilities-table">
+        
             <thead>
                 <tr>
                     <th><img src="img/arriba.jpg" alt="Zona de espera"></th>
@@ -216,7 +238,7 @@ img {
                     <td><img src="img/salom3.jpg" alt="Salón de ensayo 3"> <br>Salón 3</td>
                 </tr>
             </tbody>
-        </table>
+
     </div>
     <br>
     <br>
@@ -225,22 +247,19 @@ img {
 
     <h1>CLASES DE MÚSICA</h1>
     <div class="table-wrapper">
-
-            <tbody>
-                <tr>
-                    <td><img src="img/guitarra-electrica-sobre-fondo-madera_392895-280912.webp" alt="Guitarras" width="200" height="200"> Guitarra</td>
-                    <td><img src="img/bajos electricos.jpg" alt="Bajos" width="200" height="200"> Bajo</td>
-                    <td><img src="img/pexels-photo-2772147.webp" alt="Ukulele"width="200" height="200">Ukulele</td>
-                    <td><img src="img/mandolina.webp" alt="mandolina"width="200" height="200">mandolina</td>
-                    <td><img src="img/Violin.jpg" alt="Violín"width="200" height="200">Violin</td>
-                    <td><img src="img/tololoche-imagen-mejorada.png" alt="Tololoche"width="200" height="200">Tololoche</td>
-                    <td><img src="img/teclado.jpg" alt="Teclado"width="200" height="200">Teclado</td>
-                    <td><img src="img/bateria.jpg" alt="Baterías"width="200" height="200">Baterias</td>
-                </tr>
-            </tbody>
-        </table>
+        
+          
+                    <img src="img/guitarra-electrica-sobre-fondo-madera_392895-280912.webp" alt="Guitarras"><h2>Guitarras</h2></td>
+                    <img src="img/bajos electricos.jpg" alt="Bajos"><h2>Bajos</h2></td>
+                    <img src="img/pexels-photo-2772147.webp" alt="Ukulele"><h2>Ukuleles</h2></td>
+                    <img src="img/mandolina.webp" alt="mandolina"><h2>Mandolinas</h2></td>
+                    <img src="img/Violin.jpg" alt="Violín"><h2>Violines</h2></td>
+                    <img src="img/tololoche-imagen-mejorada.png" alt="Tololoche" width="500px" height="675px"><h2>Tololoches</h2></td>
+                    <img src="img/teclado.jpg" alt="Teclado"><h2>Teclados</h2></td>
+                    <img src="img/bateria.jpg" alt="Baterías"><h2>Baterías</h2></td>
+       
     </div> 
-    <div class="videos">
+    <div>
         <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1507419387150097%2F&show_text=false&width=560&t=0" width="500" height="320" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
         <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F842999191450670%2F&show_text=false&width=560&t=0" width="500" height="320" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
         <iframe src="https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1243862750882661%2F&show_text=false&width=220&t=0" width="220" height="476" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>
@@ -248,7 +267,7 @@ img {
     <br>
     <br>
     
-    <div class="tiendas">
+    <div>
         <a href="tienda-de-musica.html" target="_blank"><img src="img/logo bolsa.webp" alt="tienda"></a>
         <a href="piano.html"><img src="../EscuelaDeMusica/img/piano_PNG10893.png" alt="Clases de Piano"></a>
     </div>
@@ -270,7 +289,7 @@ img {
 
     <h1>INSCRIPCIONES</h1>
     <marquee behavior="scroll" direction="left" class="marquee">
-    ¡Inscríbete ahora!
+    <h1>¡Inscríbete ahora!</h1>
     </marquee>
 
     <div class="inscription-container">
@@ -303,7 +322,7 @@ img {
         </div>
     </footer>
     <hr>
-    <img src="logo the vlopers team.jpeg" alt="" width="170" height="100">
+    <img src="logo the vlopers team.jpeg" alt="" width="100" height="200">
 
     <script src="index.js"></script>
     
