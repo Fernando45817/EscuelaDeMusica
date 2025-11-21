@@ -160,9 +160,7 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
             }, { passive: false });
         });
 
-        // ------------------------------------
-        // Manejo de eventos del teclado (PC)
-        // ------------------------------------
+
         const keysPressed = {}; 
 
         document.addEventListener('keydown', (e) => {
