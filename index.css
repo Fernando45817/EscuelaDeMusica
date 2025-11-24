@@ -11,12 +11,12 @@
 
         /* --- ESTILOS GENERALES --- */
         body {
-            background-image:url(img/fondo4.jpg);
+            background-image: url(img/fondo4.jpg);
+            background-attachment: fixed;
+            background-size: cover;
             margin: 0;
             padding: 0 10px 50px 10px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text-color);
-        }
+           }
 
         /* --- TÍTULOS --- */
         h1, h2 {
@@ -471,4 +471,13 @@
     100% {
         transform: translate(-100%, 0); /* Posición final (se desplaza su propio ancho a la izquierda) */
     }
+}
+h1{
+    color: rgb(107, 39, 0);
+}
+h3{
+    color: rgb(97, 95, 0);
+}
+h2{
+    color: #2e7d32;
 }
